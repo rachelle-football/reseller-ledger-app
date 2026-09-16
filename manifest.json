@@ -1,0 +1,15 @@
+{
+  "name": "Reseller Ledger",
+  "short_name": "Reseller Ledger",
+  "description": "Resellers, invoices, employees, quotations, tasks, inventory, and tickets for Buffer ISP and Libancom.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f7a82",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
