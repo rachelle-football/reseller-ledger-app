@@ -825,6 +825,48 @@ var unsubOrgs = null;
 
 /* ============================== BOOT ============================== */
 
+/* ---- email confirmation: nobody uses the app until they've clicked the link Google emails them ---- */
+function showVerifyGate(user){
+  STATE.gate = "verify"; STATE.verifyMsg = "";
+  if (!STATE.verifySent){
+    STATE.verifySent = true;
+    user.sendEmailVerification().then(function(){ STATE.verifyMsg = "sent"; render(); })
+      .catch(function(err){ STATE.verifyMsg = (err && err.code === "auth/too-many-requests") ? "wait" : "error"; render(); });
+  }
+  render();
+}
+function buildVerifyView(){
+  var user = firebase.auth().currentUser, email = (user && user.email) || "";
+  var msg = STATE.verifyMsg === "sent" ? "We've sent a confirmation link to " + email + "."
+          : STATE.verifyMsg === "wait" ? "A link was sent recently — check your inbox (and spam), or try again in a few minutes."
+          : STATE.verifyMsg === "error" ? "Couldn't send the email — try \"Send the link again\"."
+          : STATE.verifyMsg === "notyet" ? "Not confirmed yet. Open the email and click the link, then press the button again."
+          : "Sending a confirmation link to " + email + "…";
+  return el("div",{class:"panel", style:"max-width:520px; margin:30px auto; text-align:center;"},[
+    el("div",{style:"font-size:34px; margin-bottom:6px;"},["✉️"]),
+    el("h2",{},["Confirm your email"]),
+    el("div",{style:"color:var(--ink-soft); font-size:14px; line-height:1.6; margin:8px 0 16px;"},[
+      "For security, every account must confirm its email address before using the app. Open the email from Google (check spam too) and click the link, then come back here."]),
+    el("div",{style:"font-weight:700; font-size:13.5px; margin-bottom:16px; color:" + (STATE.verifyMsg === "notyet" || STATE.verifyMsg === "error" ? "var(--bad)" : "var(--ink)") + ";"},[msg]),
+    el("div",{style:"display:flex; gap:8px; justify-content:center; flex-wrap:wrap;"},[
+      el("button",{class:"btn", onclick:function(){
+        if (!user) return;
+        user.reload().then(function(){
+          var u = firebase.auth().currentUser;
+          if (u && u.emailVerified){ return u.getIdToken(true).then(function(){ STATE.gate = null; render(); boot(); }); }
+          STATE.verifyMsg = "notyet"; render();
+        }).catch(function(){ STATE.verifyMsg = "error"; render(); });
+      }},["I've confirmed — continue"]),
+      el("button",{class:"btn ghost", onclick:function(){
+        if (!user) return;
+        user.sendEmailVerification().then(function(){ STATE.verifyMsg = "sent"; render(); })
+          .catch(function(err){ STATE.verifyMsg = (err && err.code === "auth/too-many-requests") ? "wait" : "error"; render(); });
+      }},["Send the link again"]),
+      el("button",{class:"btn ghost", onclick:function(){ firebase.auth().signOut().then(function(){ location.reload(); }); }},["Sign out"])
+    ])
+  ]);
+}
+
 function boot(){
   try{
     db = wrapDb(firebase.firestore());
@@ -887,6 +929,15 @@ function buildGateView(){
   return el("div",{class:"empty-state", style:"margin-top:30px;"},[ el("h3",{},[title]), body ? el("div",{},[body]) : null ]);
 }
 
+/* Strong password: 10+ characters with letters and numbers. Returns "" when OK, otherwise the reason. */
+var PW_HINT = "At least 10 characters, with letters and numbers";
+function passwordProblem(pw){
+  pw = String(pw || "");
+  if (pw.length < 10) return "Password must be at least 10 characters.";
+  if (!/[A-Za-z\u0600-\u06FF]/.test(pw) || !/\d/.test(pw)) return "Password must contain both letters and numbers.";
+  if (/^(.)\1+$/.test(pw) || /^(0123456789|1234567890|password|qwerty)/i.test(pw)) return "That password is too easy to guess.";
+  return "";
+}
 function createLogin(email, password){
   if (!password) return Promise.resolve("skipped");
   var app = firebase.apps.filter(function(a){ return a.name === "secondary"; })[0] || firebase.initializeApp(firebaseConfig, "secondary");
@@ -1161,6 +1212,7 @@ function startData(){
   }catch(e){ STATE.ticketsLoaded = true; }
 
   render();
+  maybeAutoBackup();
 }
 
 function watchLedger(resellerId){
@@ -1237,7 +1289,7 @@ var AR = {
 "Family Name":"اسم العائلة","Faulty":"معطّل","File uploads aren't available.":"رفع الملفات غير متاح.","Filled in once resolved":"يُملأ عند الحل","Final":"الإجمالي النهائي","Final (–10%)":"الإجمالي النهائي (–10%)","First Name":"الاسم","First and family name are required.":"الاسم واسم العائلة مطلوبان.",
 "High":"مرتفعة","ID Number":"رقم الهوية","ID copy uploaded.":"تم رفع صورة الهوية.","INVOICE":"فاتورة","INVOICE NO.":"رقم الفاتورة","In Progress":"قيد التنفيذ","In Stock":"في المخزن","Inactive":"غير نشط","Incorrect email or password.":"البريد أو كلمة المرور غير صحيحة.","Installation":"تركيب",
 "Invoice":"فاتورة","Invoice Number":"رقم الفاتورة","Invoice Settings":"إعدادات الفواتير","Invoice created.":"تم إنشاء الفاتورة.","Invoice deleted.":"تم حذف الفاتورة.","Invoice not found":"الفاتورة غير موجودة","Invoice number is required.":"رقم الفاتورة مطلوب.","Invoice updated.":"تم تحديث الفاتورة.",
-"Issue Date":"تاريخ الإصدار","Import from Excel":"استيراد من Excel","Import from photo":"استيراد من صورة","Open full size":"فتح بالحجم الكامل","Type the details in the form. This file is attached to the record when you save.":"اكتب التفاصيل في النموذج. سيُرفق هذا الملف بالسجل عند الحفظ.","Only photos and PDF files can be used.":"يمكن استخدام الصور وملفات PDF فقط.","Import expenses":"استيراد المصاريف","Import invoices":"استيراد الفواتير","Import quotations":"استيراد عروض الأسعار","Download a template":"تنزيل نموذج","1. Match the columns":"1. ربط الأعمدة","2. Check":"2. المراجعة","— choose a column —":"— اختر عمودًا —","— not in the file —":"— غير موجود في الملف —","Already in the app — skipped":"موجود في التطبيق — تم تخطيه","Attached files (photos, PDFs)":"الملفات المرفقة (صور، PDF)","Receipts & files for this expense":"الإيصالات والملفات لهذا المصروف","+ Attach photo or PDF":"+ إرفاق صورة أو PDF","Download":"تنزيل","File attached.":"تم إرفاق الملف.","File deleted.":"تم حذف الملف.","No files yet. Attach a photo or a PDF (up to 700 KB).":"لا توجد ملفات بعد. أرفق صورة أو PDF (حتى 700 كيلوبايت).","📎 Files":"📎 ملفات","Delete reseller":"حذف الموزّع","Reseller deleted.":"تم حذف الموزّع.","This payroll rules version will be removed when you save.":"ستُحذف نسخة القواعد هذه عند الحفظ.","This category will be removed when you save. Expenses already using it keep it.":"ستُزال هذه الفئة عند الحفظ. المصاريف التي تستخدمها تحتفظ بها.","Import from PROradius":"استيراد من PROradius","Transactions":"الحركات","Import PROradius file":"استيراد ملف PROradius","+ Add payment":"+ إضافة دفعة","All resellers":"كل الموزّعين","Totals by reseller":"المجاميع حسب الموزّع","Debit (paid)":"المدفوع","Remaining":"المتبقي","Remaining to pay":"المتبقي للدفع","Credit (recharges)":"تشريج","Credit (recharge)":"تشريج","All transactions":"كل الحركات","Add payment (debit)":"إضافة دفعة","Amount paid *":"المبلغ المدفوع *","Save payment":"حفظ الدفعة","Payment added.":"تمت إضافة الدفعة.","Choose reseller…":"اختر موزّعًا…","Choose a reseller.":"اختر موزّعًا.","Reseller name *":"اسم الموزّع *","Contact number":"رقم التواصل","Reseller details":"تفاصيل الموزّع","New reseller":"موزّع جديد","Save reseller":"حفظ الموزّع","Save changes":"حفظ التغييرات","View transactions":"عرض الحركات","← Back to resellers":"← العودة إلى الموزّعين","Search resellers…":"ابحث عن موزّع…","Importing…":"جارٍ الاستيراد…","No transactions yet. Import a PROradius file to add them.":"لا توجد حركات بعد. استورد ملف PROradius لإضافتها.","+ Add as new reseller":"+ إضافة كموزّع جديد","Will be added":"ستتم إضافته","New · new reseller":"جديد · موزّع جديد","Not imported":"لن يُستورد","Don't add any new resellers":"عدم إضافة موزّعين جدد","Add all unmatched as new resellers":"إضافة كل غير المرتبطين كموزّعين جدد","Import":"استيراد","Importing…":"جارٍ الاستيراد…","Choose file":"اختر ملفًا","Choose another file":"اختر ملفًا آخر","1. Match PROradius usernames to resellers":"1. ربط أسماء مستخدمي PROradius بالموزّعين","2. Check the recharges to add":"2. راجع الشحنات قبل إضافتها","PROradius username":"اسم مستخدم PROradius","Reseller in ledger":"الموزّع في الدفتر","— Don't import —":"— عدم الاستيراد —","Not matched":"غير مرتبط","Rows":"الأسطر","New":"جديد","Already imported":"مستورد سابقًا","Checking…":"جارٍ التحقق…","Choose a reseller above":"اختر موزّعًا في الأعلى","Missing date, username or amount":"تاريخ أو اسم مستخدم أو مبلغ ناقص","Same date & amount already in ledger":"التاريخ والمبلغ نفسه موجود في الدفتر","Couldn't check this ledger":"تعذّر التحقق من هذا الدفتر","This file needs the columns Date, Credit and Amount.":"يجب أن يحتوي الملف على الأعمدة Date وCredit وAmount.","Couldn't read that file.":"تعذّرت قراءة الملف.","Excel tools are still loading — try again in a moment.":"أدوات Excel قيد التحميل — حاول بعد لحظة.","Are you sure?":"هل أنت متأكد؟","Couldn't delete — try again.":"تعذّر الحذف — حاول مجددًا.","Couldn't remove access — try again.":"تعذّر إزالة الوصول — حاول مجددًا.","Couldn't withdraw — try again.":"تعذّر السحب — حاول مجددًا.","Withdraw":"سحب","Unlock":"فتح القفل","This ledger entry will be deleted and the reseller's balance will change.":"سيُحذف هذا القيد وسيتغيّر رصيد الموزّع.","This salary entry will be deleted.":"سيُحذف قيد الراتب هذا.","This task will be deleted.":"ستُحذف هذه المهمة.","This inventory item will be deleted.":"سيُحذف عنصر المخزون هذا.","This ticket will be deleted.":"ستُحذف هذه التذكرة.","This leave record will be deleted.":"سيُحذف سجل الإجازة هذا.","This expense will be deleted.":"سيُحذف هذا المصروف.","This supplier will be deleted.":"سيُحذف هذا المورد.","This recurring expense will be deleted. Expenses it already created stay.":"سيُحذف هذا المصروف المتكرر. تبقى المصاريف التي أنشأها سابقًا.","Your expense claim will be withdrawn.":"سيتم سحب طلب الاسترداد.","This reseller will no longer be able to sign in to the portal.":"لن يتمكن هذا الموزّع من الدخول إلى البوابة بعد الآن.","ISSUE DATE":"تاريخ الإصدار","SUBTOTAL":"المجموع الفرعي","VAT":"الضريبة على القيمة المضافة","VAT / MOF number":"الرقم الضريبي (MOF)","VAT rate %":"نسبة الضريبة %","Client VAT / MOF number":"الرقم الضريبي للزبون","Leave empty if not VAT-registered":"اتركه فارغًا إن لم تكن مسجّلًا في الضريبة","Set the VAT rate in Business Settings first":"حدّد نسبة الضريبة في إعدادات الشركة أولًا","Item added.":"تمت إضافة العنصر.","Item updated.":"تم تحديث العنصر.","Leave empty to use the default link":"اتركه فارغًا لاستخدام الرابط الافتراضي","Ledger":"دفتر الحساب","Line Items":"البنود","Link":"رابط","Link Install":"تركيب رابط","Link Tuning":"ضبط رابط",
+"Issue Date":"تاريخ الإصدار","Confirm your email":"أكّد بريدك الإلكتروني","I've confirmed — continue":"لقد أكّدت — متابعة","Send the link again":"أرسل الرابط مجددًا","Password must be at least 10 characters.":"يجب أن تكون كلمة المرور 10 أحرف على الأقل.","Password must contain both letters and numbers.":"يجب أن تحتوي كلمة المرور على أحرف وأرقام.","That password is too easy to guess.":"كلمة المرور سهلة التخمين.","At least 10 characters, with letters and numbers":"10 أحرف على الأقل، مع أحرف وأرقام","Today's backup was saved to your Downloads folder.":"تم حفظ نسخة اليوم في مجلد التنزيلات.","Saving today's automatic backup to this computer…":"جارٍ حفظ النسخة الاحتياطية اليومية على هذا الكمبيوتر…","Import from Excel":"استيراد من Excel","Import from photo":"استيراد من صورة","Open full size":"فتح بالحجم الكامل","Type the details in the form. This file is attached to the record when you save.":"اكتب التفاصيل في النموذج. سيُرفق هذا الملف بالسجل عند الحفظ.","Only photos and PDF files can be used.":"يمكن استخدام الصور وملفات PDF فقط.","Import expenses":"استيراد المصاريف","Import invoices":"استيراد الفواتير","Import quotations":"استيراد عروض الأسعار","Download a template":"تنزيل نموذج","1. Match the columns":"1. ربط الأعمدة","2. Check":"2. المراجعة","— choose a column —":"— اختر عمودًا —","— not in the file —":"— غير موجود في الملف —","Already in the app — skipped":"موجود في التطبيق — تم تخطيه","Attached files (photos, PDFs)":"الملفات المرفقة (صور، PDF)","Receipts & files for this expense":"الإيصالات والملفات لهذا المصروف","+ Attach photo or PDF":"+ إرفاق صورة أو PDF","Download":"تنزيل","File attached.":"تم إرفاق الملف.","File deleted.":"تم حذف الملف.","No files yet. Attach a photo or a PDF (up to 700 KB).":"لا توجد ملفات بعد. أرفق صورة أو PDF (حتى 700 كيلوبايت).","📎 Files":"📎 ملفات","Delete reseller":"حذف الموزّع","Reseller deleted.":"تم حذف الموزّع.","This payroll rules version will be removed when you save.":"ستُحذف نسخة القواعد هذه عند الحفظ.","This category will be removed when you save. Expenses already using it keep it.":"ستُزال هذه الفئة عند الحفظ. المصاريف التي تستخدمها تحتفظ بها.","Import from PROradius":"استيراد من PROradius","Transactions":"الحركات","Import PROradius file":"استيراد ملف PROradius","+ Add payment":"+ إضافة دفعة","All resellers":"كل الموزّعين","Totals by reseller":"المجاميع حسب الموزّع","Debit (paid)":"المدفوع","Remaining":"المتبقي","Remaining to pay":"المتبقي للدفع","Credit (recharges)":"تشريج","Credit (recharge)":"تشريج","All transactions":"كل الحركات","Add payment (debit)":"إضافة دفعة","Amount paid *":"المبلغ المدفوع *","Save payment":"حفظ الدفعة","Payment added.":"تمت إضافة الدفعة.","Choose reseller…":"اختر موزّعًا…","Choose a reseller.":"اختر موزّعًا.","Reseller name *":"اسم الموزّع *","Contact number":"رقم التواصل","Reseller details":"تفاصيل الموزّع","New reseller":"موزّع جديد","Save reseller":"حفظ الموزّع","Save changes":"حفظ التغييرات","View transactions":"عرض الحركات","← Back to resellers":"← العودة إلى الموزّعين","Search resellers…":"ابحث عن موزّع…","Importing…":"جارٍ الاستيراد…","No transactions yet. Import a PROradius file to add them.":"لا توجد حركات بعد. استورد ملف PROradius لإضافتها.","+ Add as new reseller":"+ إضافة كموزّع جديد","Will be added":"ستتم إضافته","New · new reseller":"جديد · موزّع جديد","Not imported":"لن يُستورد","Don't add any new resellers":"عدم إضافة موزّعين جدد","Add all unmatched as new resellers":"إضافة كل غير المرتبطين كموزّعين جدد","Import":"استيراد","Importing…":"جارٍ الاستيراد…","Choose file":"اختر ملفًا","Choose another file":"اختر ملفًا آخر","1. Match PROradius usernames to resellers":"1. ربط أسماء مستخدمي PROradius بالموزّعين","2. Check the recharges to add":"2. راجع الشحنات قبل إضافتها","PROradius username":"اسم مستخدم PROradius","Reseller in ledger":"الموزّع في الدفتر","— Don't import —":"— عدم الاستيراد —","Not matched":"غير مرتبط","Rows":"الأسطر","New":"جديد","Already imported":"مستورد سابقًا","Checking…":"جارٍ التحقق…","Choose a reseller above":"اختر موزّعًا في الأعلى","Missing date, username or amount":"تاريخ أو اسم مستخدم أو مبلغ ناقص","Same date & amount already in ledger":"التاريخ والمبلغ نفسه موجود في الدفتر","Couldn't check this ledger":"تعذّر التحقق من هذا الدفتر","This file needs the columns Date, Credit and Amount.":"يجب أن يحتوي الملف على الأعمدة Date وCredit وAmount.","Couldn't read that file.":"تعذّرت قراءة الملف.","Excel tools are still loading — try again in a moment.":"أدوات Excel قيد التحميل — حاول بعد لحظة.","Are you sure?":"هل أنت متأكد؟","Couldn't delete — try again.":"تعذّر الحذف — حاول مجددًا.","Couldn't remove access — try again.":"تعذّر إزالة الوصول — حاول مجددًا.","Couldn't withdraw — try again.":"تعذّر السحب — حاول مجددًا.","Withdraw":"سحب","Unlock":"فتح القفل","This ledger entry will be deleted and the reseller's balance will change.":"سيُحذف هذا القيد وسيتغيّر رصيد الموزّع.","This salary entry will be deleted.":"سيُحذف قيد الراتب هذا.","This task will be deleted.":"ستُحذف هذه المهمة.","This inventory item will be deleted.":"سيُحذف عنصر المخزون هذا.","This ticket will be deleted.":"ستُحذف هذه التذكرة.","This leave record will be deleted.":"سيُحذف سجل الإجازة هذا.","This expense will be deleted.":"سيُحذف هذا المصروف.","This supplier will be deleted.":"سيُحذف هذا المورد.","This recurring expense will be deleted. Expenses it already created stay.":"سيُحذف هذا المصروف المتكرر. تبقى المصاريف التي أنشأها سابقًا.","Your expense claim will be withdrawn.":"سيتم سحب طلب الاسترداد.","This reseller will no longer be able to sign in to the portal.":"لن يتمكن هذا الموزّع من الدخول إلى البوابة بعد الآن.","ISSUE DATE":"تاريخ الإصدار","SUBTOTAL":"المجموع الفرعي","VAT":"الضريبة على القيمة المضافة","VAT / MOF number":"الرقم الضريبي (MOF)","VAT rate %":"نسبة الضريبة %","Client VAT / MOF number":"الرقم الضريبي للزبون","Leave empty if not VAT-registered":"اتركه فارغًا إن لم تكن مسجّلًا في الضريبة","Set the VAT rate in Business Settings first":"حدّد نسبة الضريبة في إعدادات الشركة أولًا","Item added.":"تمت إضافة العنصر.","Item updated.":"تم تحديث العنصر.","Leave empty to use the default link":"اتركه فارغًا لاستخدام الرابط الافتراضي","Ledger":"دفتر الحساب","Line Items":"البنود","Link":"رابط","Link Install":"تركيب رابط","Link Tuning":"ضبط رابط",
 "Live sync unavailable — can't save right now.":"المزامنة غير متاحة — لا يمكن الحفظ الآن.","Loading your workspace…":"جارٍ تحميل مساحة العمل…","Loading…":"جارٍ التحميل…","Log a recharge or a payment below.":"سجّل تعبئة أو دفعة أدناه.","Log a salary payment below.":"سجّل دفعة راتب أدناه.",
 "Low":"منخفضة","Marital Status":"الوضع العائلي","Mark Paid":"تحديد كمدفوعة","Mark Unpaid":"تحديد كغير مدفوعة","Marked as paid.":"تم التحديد كمدفوعة.","Marked as unpaid.":"تم التحديد كغير مدفوعة.","Married":"متزوج","Medium":"متوسطة","Method":"طريقة الدفع","Method (Cash or Whish) is required.":"طريقة الدفع (نقدًا أو Whish) مطلوبة.",
 "Module Number":"رقم الموديل","Monthly Salary":"الراتب الشهري","My Company":"شركتي","Name":"الاسم","Name is required.":"الاسم مطلوب.","National Social Security (Daman)":"الضمان الاجتماعي","Nationality":"الجنسية","Network error — check your internet connection.":"خطأ في الشبكة — تحقّق من الإنترنت.",
@@ -5084,7 +5136,7 @@ function buildTeamAccessView(){
   linkSelect.appendChild(el("option",{value:""},["Not linked"]));
   STATE.employees.forEach(function(emp){ linkSelect.appendChild(el("option",{value:emp.id},[employeeFullName(emp) + (emp.company ? " — " + emp.company : "")])); });
   linkField.appendChild(linkSelect);
-  var passField = el("div",{class:"field"},[el("label",{},["Password (to create their login)"]), el("input",{type:"text", id:"ta-pass", placeholder:"At least 6 characters — leave empty if they already have a login"})]);
+  var passField = el("div",{class:"field"},[el("label",{},["Password (to create their login)"]), el("input",{type:"text", id:"ta-pass", placeholder:"At least 10 characters, letters and numbers — leave empty if they already have a login"})]);
   grid.appendChild(emailField); grid.appendChild(roleField); grid.appendChild(coField); grid.appendChild(linkField); grid.appendChild(passField);
   formPanel.appendChild(grid);
   formPanel.appendChild(el("div",{class:"form-actions"},[
@@ -5093,7 +5145,7 @@ function buildTeamAccessView(){
       if (!email){ toast("Enter an email address."); return; }
       if (!db){ toast("Live sync unavailable — can't save right now."); return; }
       var pass = document.getElementById("ta-pass").value;
-      if (pass && pass.length < 6){ toast("Password must be at least 6 characters."); return; }
+      if (pass && passwordProblem(pass)){ toast(passwordProblem(pass)); return; }
       var role = document.getElementById("ta-role").value;
       var allBox = document.getElementById("ta-co-all");
       var companies = (allBox && allBox.checked) ? [] : COMPANIES.filter(function(c, i){ var b = document.getElementById("ta-co-" + i); return b && b.checked; });
@@ -5312,7 +5364,7 @@ function buildCustomersView(){
   var grid = el("div",{class:"form-grid"});
   grid.appendChild(el("div",{class:"field"},[el("label",{},["Company name *"]), el("input",{type:"text", id:"cu-name", placeholder:"e.g. Cedar Net"})]));
   grid.appendChild(el("div",{class:"field"},[el("label",{},["Admin email *"]), el("input",{type:"email", id:"cu-email", placeholder:"owner@company.com"})]));
-  grid.appendChild(el("div",{class:"field"},[el("label",{},["Starting password *"]), el("input",{type:"text", id:"cu-pass", placeholder:"At least 6 characters"})]));
+  grid.appendChild(el("div",{class:"field"},[el("label",{},["Starting password *"]), el("input",{type:"text", id:"cu-pass", placeholder:PW_HINT})]));
   form.appendChild(grid);
   form.appendChild(el("div",{class:"form-actions"},[
     el("button",{class:"btn", disabled:STATE.orgBusy?"disabled":null, onclick:function(){
@@ -5320,7 +5372,7 @@ function buildCustomersView(){
       var email = document.getElementById("cu-email").value.trim().toLowerCase();
       var pass = document.getElementById("cu-pass").value;
       if (!name || !email){ toast("Company name and admin email are required."); return; }
-      if (!pass || pass.length < 6){ toast("Starting password must be at least 6 characters."); return; }
+      if (!pass || passwordProblem(pass)){ toast(passwordProblem(pass)); return; }
       var id = slugify(name) + "-" + Math.random().toString(36).slice(2,6);
       var now = new Date().toISOString();
       STATE.orgBusy = true; render();
@@ -7574,7 +7626,7 @@ function collectBackup(){
     })));
   }).then(function(){ return data; });
 }
-function runBackup(format){
+function runBackup(format, done){
   if (STATE.backupBusy) return;
   STATE.backupBusy = true; render();
   collectBackup().then(function(data){
@@ -7592,8 +7644,28 @@ function runBackup(format){
       downloadTextFile(JSON.stringify({app:"Reseller Ledger", workspace:ORG, exportedAt:new Date().toISOString(), exportedBy:STATE.currentUserEmail, data:data}, null, 1), base + ".json", "application/json");
     }
     return cfgDoc("backupInfo").set({lastAt:new Date().toISOString(), by:STATE.currentUserEmail, counts:counts}, {merge:true}).catch(function(){});
-  }).then(function(){ STATE.backupBusy = false; toast("Backup downloaded."); render(); })
-    .catch(function(){ STATE.backupBusy = false; toast("Couldn't create the backup — try again."); render(); });
+  }).then(function(){ STATE.backupBusy = false; if (done) done(true); else toast("Backup downloaded."); render(); })
+    .catch(function(){ STATE.backupBusy = false; if (done) done(false); toast("Couldn't create the backup — try again."); render(); });
+}
+/* Automatic daily copy: the first time an admin opens the app each day on this computer, a full backup
+   (Excel) is saved to the Downloads folder. Can be switched off per computer in Activity & Backup. */
+function autoBackupKey(){ return "rl-autobackup-" + ORG + "-" + (STATE.currentUserEmail || "").toLowerCase(); }
+function autoBackupOn(){
+  try{ var v = localStorage.getItem(autoBackupKey() + "-on"); if (v === "0") return false; if (v === "1") return true; }catch(e){ return false; }
+  return window.innerWidth >= 800;          // on by default on computers, off on phones
+}
+function setAutoBackup(on){ try{ localStorage.setItem(autoBackupKey() + "-on", on ? "1" : "0"); }catch(e){} render(); }
+function maybeAutoBackup(){
+  if (!isAdminUser() || !ORG || STATE.autoBackupChecked || !autoBackupOn()) return;
+  STATE.autoBackupChecked = true;
+  var today = localToday(), last = "";
+  try{ last = localStorage.getItem(autoBackupKey()) || ""; }catch(e){ return; }
+  if (last === today) return;
+  setTimeout(function(){                       // give the app a moment to load first
+    if (STATE.backupBusy) return;
+    toast("Saving today's automatic backup to this computer…");
+    runBackup("xlsx", function(ok){ if (ok){ try{ localStorage.setItem(autoBackupKey(), today); }catch(e){} toast("Today's backup was saved to your Downloads folder."); } });
+  }, 8000);
 }
 function backupAgeDays(){
   var at = STATE.backupInfo && STATE.backupInfo.lastAt;
@@ -7612,7 +7684,10 @@ function buildBackupView(){
     ]),
     el("div",{style:"margin-top:14px; font-size:13px; color:" + (age === null || age > 30 ? "var(--bad)" : "var(--ink-soft)") + ";"},[
       age === null ? "No backup yet." : ("Last backup: " + (info.lastAt || "").slice(0,10) + " by " + (info.by || "—") + " (" + (age === 0 ? "today" : age + " days ago") + ")")]),
-    info.counts ? el("div",{style:"margin-top:6px; font-size:12px; color:var(--ink-faint);"},[info.counts]) : null
+    info.counts ? el("div",{style:"margin-top:6px; font-size:12px; color:var(--ink-faint);"},[info.counts]) : null,
+    el("label",{class:"check-field", style:"margin-top:14px; display:flex; gap:8px; align-items:flex-start;"},[
+      el("input",{type:"checkbox", checked:autoBackupOn() ? "checked" : null, onchange:function(e){ setAutoBackup(e.target.checked); }}),
+      el("span",{},["Save a backup automatically on this computer every day (the first time I open the app). Keep this computer's disk encrypted (BitLocker on Windows)."])])
   ]));
   return wrap;
 }
@@ -8043,12 +8118,12 @@ function buildPortalAccessPanel(r){
   }
   panel.appendChild(el("div",{class:"form-grid", style:"margin-top:8px;"},[
     el("div",{class:"field"},[el("label",{},["Email *"]), el("input",{type:"email", id:"rp-email", placeholder:"reseller@example.com"})]),
-    el("div",{class:"field"},[el("label",{},["Password (to create their login)"]), el("input",{type:"text", id:"rp-pass", placeholder:"At least 6 characters — leave empty if they already have a login"})])
+    el("div",{class:"field"},[el("label",{},["Password (to create their login)"]), el("input",{type:"text", id:"rp-pass", placeholder:"At least 10 characters, letters and numbers — leave empty if they already have a login"})])
   ]));
   panel.appendChild(el("div",{class:"form-actions"},[el("button",{class:"btn", onclick:function(){
     var email = document.getElementById("rp-email").value.trim().toLowerCase(), pass = document.getElementById("rp-pass").value;
     if (!email){ toast("Enter an email address."); return; }
-    if (pass && pass.length < 6){ toast("Password must be at least 6 characters."); return; }
+    if (pass && passwordProblem(pass)){ toast(passwordProblem(pass)); return; }
     db.doc("users/" + email).get().then(function(snap){
       if (snap.exists && snap.data() && (snap.data().orgId !== ORG || snap.data().role !== "reseller")) throw {code:"taken"};
       return db.doc("users/" + email).set({orgId:ORG, role:"reseller", resellerId:r.id, companies:[r.company || "Libancom"], employeeId:"", updatedAt:new Date().toISOString()});
@@ -8399,7 +8474,17 @@ function startIdleWatch(){
   });
   idleTimer = setInterval(checkIdle, 15000);
 }
+var MAX_SESSION_HOURS = 12;
+function sessionTooOld(){
+  var u = firebase.auth().currentUser, t = u && u.metadata && Date.parse(u.metadata.lastSignInTime || "");
+  return !!(t && (Date.now() - t) > MAX_SESSION_HOURS * 3600000);
+}
 function checkIdle(){
+  if (STATE.currentUserEmail && sessionTooOld()){
+    try{ sessionStorage.setItem("rl-session-out", "1"); }catch(e){}
+    firebase.auth().signOut().then(function(){ location.reload(); });
+    return;
+  }
   var lim = idleLimitMin();
   if (!lim || !STATE.currentUserEmail) return;
   var idle = (Date.now() - idleLast) / 60000;
@@ -8412,6 +8497,11 @@ function checkIdle(){
 }
 function showIdleNotice(){
   try{
+    if (sessionStorage.getItem("rl-session-out")){
+      sessionStorage.removeItem("rl-session-out");
+      var er0 = document.getElementById("login-error");
+      if (er0){ er0.style.color = ""; er0.textContent = tr("For security, everyone signs in again every " + MAX_SESSION_HOURS + " hours. Please sign in."); }
+    }
     var m = sessionStorage.getItem("rl-idle-out");
     if (m){
       sessionStorage.removeItem("rl-idle-out");
@@ -8427,13 +8517,13 @@ function buildPasswordPanel(){
     el("button",{class:"btn ghost small", onclick:function(){ STATE.showPasswordPanel = false; render(); }},["Close"])]));
   p.appendChild(el("div",{class:"form-grid"},[
     el("div",{class:"field"},[el("label",{},["Current password"]), el("input",{type:"password", id:"pw-cur", autocomplete:"current-password"})]),
-    el("div",{class:"field"},[el("label",{},["New password"]), el("input",{type:"password", id:"pw-new", autocomplete:"new-password", placeholder:"At least 8 characters, with a number"})]),
+    el("div",{class:"field"},[el("label",{},["New password"]), el("input",{type:"password", id:"pw-new", autocomplete:"new-password", placeholder:PW_HINT})]),
     el("div",{class:"field"},[el("label",{},["Repeat new password"]), el("input",{type:"password", id:"pw-new2", autocomplete:"new-password"})])
   ]));
   p.appendChild(el("div",{class:"form-actions"},[el("button",{class:"btn", disabled:STATE.pwBusy ? "disabled" : null, onclick:function(){
     var cur = document.getElementById("pw-cur").value, n1 = document.getElementById("pw-new").value, n2 = document.getElementById("pw-new2").value;
     if (!cur){ toast("Enter your current password."); return; }
-    if (n1.length < 8 || !/\d/.test(n1)){ toast("New password: at least 8 characters, with a number."); return; }
+    if (passwordProblem(n1)){ toast(passwordProblem(n1)); return; }
     if (n1 !== n2){ toast("The two new passwords don't match."); return; }
     if (n1 === cur){ toast("The new password must be different."); return; }
     var user = firebase.auth().currentUser;
@@ -8483,6 +8573,10 @@ function render(){
   var main = document.getElementById("main");
   main.innerHTML = "";
 
+  if (STATE.gate === "verify"){
+    main.appendChild(buildVerifyView());
+    return;
+  }
   if (STATE.gate){
     main.appendChild(buildGateView());
     return;
@@ -8717,8 +8811,10 @@ function initAuthGate(){
       if (whoEl) whoEl.textContent = user.email || "";
       STATE.currentUserEmail = user.email || "";
       STATE.roleLoaded = false;
+      if (sessionTooOld()){ firebase.auth().signOut().then(function(){ location.reload(); }); return; }
       showApp(true);
       startIdleWatch();
+      if (!user.emailVerified){ showVerifyGate(user); return; }
       boot();
     } else {
       teardownSubscriptions();
