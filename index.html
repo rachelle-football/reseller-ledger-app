@@ -1111,6 +1111,19 @@ function createLogin(email, password){
   });
 }
 
+// company list + branding from the workspace settings (hidden companies are left out of the app)
+function applyWorkspace(ws){
+    STATE.workspace = ws;
+    var names = (STATE.workspace && Array.isArray(STATE.workspace.companies) && STATE.workspace.companies.length)
+      ? STATE.workspace.companies.filter(function(c){ return !c.hidden; }).map(function(c){ return c.name; }).filter(Boolean)
+      : defaultCompanies();
+    if (!names.length) names = STATE.workspace.companies.map(function(c){ return c.name; }).filter(Boolean);
+    COMPANIES = limitCompanies(names);
+    if (COMPANIES.indexOf(STATE.company) === -1) STATE.company = COMPANIES[0];
+    STATE.workspaceLoaded = true;
+    render();
+}
+
 function startData(){
   if (isResellerUser()){ startResellerData(); return; }
 
@@ -1206,14 +1219,7 @@ function startData(){
   // workspace / business settings (company list + branding)
   try{
     unsubWorkspace = cfgDoc("workspace").onSnapshot(function(snap){
-      STATE.workspace = (snap.exists && snap.data()) ? snap.data() : null;
-      var names = (STATE.workspace && Array.isArray(STATE.workspace.companies) && STATE.workspace.companies.length)
-        ? STATE.workspace.companies.map(function(c){ return c.name; }).filter(Boolean)
-        : defaultCompanies();
-      COMPANIES = limitCompanies(names);
-      if (COMPANIES.indexOf(STATE.company) === -1) STATE.company = COMPANIES[0];
-      STATE.workspaceLoaded = true;
-      render();
+      applyWorkspace((snap.exists && snap.data()) ? snap.data() : null);
     }, function(){ STATE.workspaceLoaded = true; render(); });
   }catch(e){ STATE.workspaceLoaded = true; }
 
@@ -1467,7 +1473,7 @@ var AR = {
 "QR Code Link (opens when scanned)":"رابط رمز QR (يفتح عند المسح)","QUOTATION":"عرض سعر","Quantity":"الكمية","Quotation":"عرض سعر","Quotation Number":"رقم عرض السعر","Quotation created.":"تم إنشاء عرض السعر.","Quotation deleted.":"تم حذف عرض السعر.","Quotation not found":"عرض السعر غير موجود","Quotation number is required.":"رقم عرض السعر مطلوب.","Quotation updated.":"تم تحديث عرض السعر.",
 "Quote Date":"تاريخ العرض","Radio":"راديو","Rate":"السعر","Recharge (debit)":"تعبئة (مدين)","Record Payment":"تسجيل دفعة","Region":"المنطقة","Rejected":"مرفوض","Remove":"إزالة","Remove access to this workspace":"إزالة الوصول لمساحة العمل","Remove line":"إزالة البند","Remove logo":"إزالة الشعار","Repair":"تصليح",
 "Reseller":"موزّع","Reseller added.":"تمت إضافة الموزّع.","Reseller not found":"الموزّع غير موجود","Reseller updated.":"تم تحديث الموزّع.","Resolved":"محلولة","Resolved/Closed":"محلولة/مغلقة","Responsible":"المسؤول","Role":"الدور","Router":"راوتر","STATEMENT":"كشف حساب",
-"Salary Amount":"قيمة الراتب","Salary Details":"تفاصيل الراتب","Save":"حفظ","Save Access Level":"حفظ الصلاحية","Save Changes":"حفظ التغييرات","Save Employee":"حفظ الموظف","Save Invoice":"حفظ الفاتورة","Save Item":"حفظ العنصر","Save Quotation":"حفظ عرض السعر","Save Reseller":"حفظ الموزّع","Save Task":"حفظ المهمة","Save Ticket":"حفظ التذكرة","Save settings":"حفظ الإعدادات",
+"Salary Amount":"قيمة الراتب","Salary Details":"تفاصيل الراتب","Save":"حفظ","Save Access Level":"حفظ الصلاحية","Save Changes":"حفظ التغييرات","Save Employee":"حفظ الموظف","Save Invoice":"حفظ الفاتورة","Save Item":"حفظ العنصر","Save Quotation":"حفظ عرض السعر","Save Reseller":"حفظ الموزّع","Save Task":"حفظ المهمة","Save Ticket":"حفظ التذكرة","Save settings":"حفظ الإعدادات","Hide company":"إخفاء الشركة","Show again":"إظهار مجددًا","Delete company":"حذف الشركة","Hidden":"مخفية","Hide instead":"إخفاء بدلاً من ذلك","Delete everything":"حذف كل شيء","Hide":"إخفاء",
 "Search by client or invoice number…":"ابحث باسم الزبون أو رقم الفاتورة…","Search by client or quotation number…":"ابحث باسم الزبون أو رقم العرض…","Search by site/client, responsible, or task type…":"ابحث بالموقع/الزبون أو المسؤول أو نوع المهمة…","Search by ticket #, subject, category, assignee, or problem…":"ابحث برقم التذكرة أو الموضوع أو الفئة أو المسؤول أو المشكلة…",
 "Search by type, serial, module, or brand…":"ابحث بالنوع أو الرقم التسلسلي أو الموديل أو الماركة…","Search employees by name, position, or nationality…":"ابحث عن موظف بالاسم أو المنصب أو الجنسية…","Search resellers by name, contact, or region…":"ابحث عن موزّع بالاسم أو الشخص المسؤول أو المنطقة…",
 "Select a reseller.":"اختر موزّعًا.","Select reseller…":"اختر موزّعًا…","Select…":"اختر…","Sent":"مُرسَل","Serial Number":"الرقم التسلسلي","Serial number is required.":"الرقم التسلسلي مطلوب.","Service":"الخدمة","Set Access Level":"تحديد الصلاحية",
@@ -5512,8 +5518,9 @@ function currentBrandList(){
   var names = saved ? saved.map(function(c){ return c.name; }) : defaultCompanies();
   return names.map(function(n){
     var b = brandFor(n);
-    return {name:n, logo:b.logo, email:b.email, phone:b.phone,
-            website:(saved && (saved.find(function(c){ return c.name===n; })||{}).website) || ""};
+    var sc = (saved && saved.find(function(c){ return c.name===n; })) || {};
+    return {name:n, logo:b.logo, email:b.email, phone:b.phone, website:sc.website || "",
+            vatNumber:b.vatNumber || "", vatRate:b.vatRate || "", hidden:!!sc.hidden};
   });
 }
 
@@ -5542,6 +5549,128 @@ function resizeLogoFile(file, cb){
   reader.readAsDataURL(file);
 }
 
+// save the company list (used by "Save settings", "Hide company" and "Delete company")
+function saveBrandDraft(draft, okMsg){
+  var seen = {}, out = [];
+  for (var i=0;i<draft.length;i++){
+    var c = draft[i];
+    var name = (c.name||"").trim();
+    if (!name){ toast("Every company needs a name."); return Promise.resolve(false); }
+    if (seen[name.toLowerCase()]){ toast("Two companies can't have the same name."); return Promise.resolve(false); }
+    seen[name.toLowerCase()] = true;
+    var item = {name:name, email:(c.email||"").trim(), phone:(c.phone||"").trim(), website:(c.website||"").trim(),
+                vatNumber:(c.vatNumber||"").trim(), vatRate:Math.max(0, Number(c.vatRate)||0)};
+    if (c.hidden) item.hidden = true;
+    if (c.logo !== LOGO_DATA_URI) item.logo = c.logo || "";   // default logo is not duplicated into the database
+    out.push(item);
+  }
+  if (!out.some(function(c){ return !c.hidden; })){ toast("At least one company must stay visible."); return Promise.resolve(false); }
+  if (!db){ toast("Live sync unavailable — can't save right now."); return Promise.resolve(false); }
+  return cfgDoc("workspace").set({companies:out, updatedAt:new Date().toISOString()}).then(function(){
+    toast(okMsg);
+    STATE.brandDraft = null;
+    applyWorkspace(Object.assign({}, STATE.workspace || {}, {companies:out}));   // show the change right away
+    return true;
+  }).catch(function(){ toast("Couldn't save — the logo may be too large. Try a smaller image."); return false; });
+}
+
+function companyToggleHidden(draft, idx){
+  var c = draft[idx];
+  if (c.hidden){ c.hidden = false; saveBrandDraft(draft, c.name + " is visible again."); return; }
+  var visible = draft.filter(function(x){ return !x.hidden && !x.isNew; }).length;
+  if (visible <= 1){ toast("At least one company must stay visible."); return; }
+  confirmDanger(c.name + " will be hidden from the tabs, lists and reports. Nothing is deleted — you can show it again here at any time.", function(){
+    c.hidden = true; saveBrandDraft(draft, c.name + " is hidden.");
+  }, "Hide");
+}
+
+// every collection that saves a "company" on its records, and the sub-lists stored under each record
+var COMPANY_DATA = [
+  ["resellers","Resellers",["ledger"]], ["invoices","Invoices",["files"]], ["quotations","Quotations",["files"]],
+  ["expenses","Expenses",["files"]], ["recurringExpenses","Recurring expenses",[]], ["suppliers","Suppliers",[]],
+  ["purchaseOrders","Purchase orders",[]], ["projects","Projects",[]], ["employees","Employees",["payroll","payslips"]],
+  ["leaves","Leave requests",[]], ["schedules","Schedules",[]], ["inventory","Inventory",[]], ["tickets","Tickets",[]]
+];
+function companyFindData(name){
+  return Promise.all(COMPANY_DATA.map(function(d){
+    return db.collection(d[0]).where("orgId","==",ORG).where("company","==",name).get()
+      .then(function(qs){ return {col:d, docs:qs.docs, ok:true}; })
+      .catch(function(){ return {col:d, docs:[], ok:false}; });
+  }));
+}
+function companyDeleteData(found){
+  var failed = 0;
+  var jobs = [];
+  found.forEach(function(f){
+    f.docs.forEach(function(doc){
+      jobs.push(function(){
+        return Promise.all(f.col[2].map(function(sub){
+          return doc.ref.collection(sub).get().then(function(qs){
+            return Promise.all(qs.docs.map(function(s){ return s.ref.delete(); }));
+          });
+        })).then(function(){ return doc.ref.delete(); }).catch(function(){ failed++; });
+      });
+    });
+  });
+  // a few at a time, so a big company doesn't overload the browser
+  var i = 0;
+  function next(){
+    if (i >= jobs.length) return Promise.resolve(failed);
+    var batch = jobs.slice(i, i + 10); i += 10;
+    return Promise.all(batch.map(function(j){ return j(); })).then(next);
+  }
+  return next();
+}
+function companyDeleteFlow(draft, idx){
+  var c = draft[idx];
+  if (draft.filter(function(x){ return !x.isNew; }).length <= 1){ toast("You can't delete the last company."); return; }
+  if (!db){ toast("Live sync unavailable — try again later."); return; }
+  toast("Checking what is saved under " + c.name + "…");
+  companyFindData(c.name).then(function(found){
+    var total = 0, lines = [];
+    found.forEach(function(f){ if (f.docs.length){ total += f.docs.length; lines.push(f.docs.length + " " + f.col[1].toLowerCase()); } });
+    var removeFromList = function(msg){ draft.splice(draft.indexOf(c), 1); saveBrandDraft(draft, msg); };
+    if (!total){
+      confirmDanger(c.name + " has no saved records. It will be removed from the app.", function(){ removeFromList(c.name + " deleted."); }, "Delete company");
+      return;
+    }
+    // records exist: offer Hide, or delete everything after typing the name
+    var old = document.getElementById("confirm-overlay"); if (old) old.remove();
+    var typed = el("input",{type:"text", placeholder:c.name, style:"width:100%; box-sizing:border-box; margin:6px 0 14px; padding:8px 10px; font-size:14px; border:1px solid var(--line-strong); border-radius:8px;"});
+    var delBtn = el("button",{class:"btn danger-solid small", disabled:"disabled", onclick:function(){
+      if (typed.value.trim() !== c.name) return;
+      close();
+      toast("Deleting " + c.name + " and its records…");
+      companyDeleteData(found).then(function(failed){
+        if (failed){ toast(failed + " record(s) couldn't be deleted — the company was kept. Try again."); return; }
+        removeFromList(c.name + " and all its records were deleted.");
+      });
+    }},["Delete everything"]);
+    typed.addEventListener("input", function(){ if (typed.value.trim() === c.name) delBtn.removeAttribute("disabled"); else delBtn.setAttribute("disabled","disabled"); });
+    function onKey(ev){ if (ev.key === "Escape") close(); }
+    function close(){ document.removeEventListener("keydown", onKey); overlay.remove(); }
+    var overlay = el("div",{class:"confirm-overlay", id:"confirm-overlay", role:"dialog", "aria-modal":"true", onclick:function(ev){ if (ev.target === overlay) close(); }},[
+      el("div",{class:"confirm-box"},[
+        el("h3",{},["Delete " + c.name + "?"]),
+        el("p",{},[c.name + " still has " + total + " saved record(s): " + lines.join(", ") + "."]),
+        el("p",{},["If you may need them later, choose Hide instead — nothing is lost. Deleting removes the company and all these records for good; it can't be undone."]),
+        el("p",{style:"margin-bottom:0;"},["To delete everything, type the company name: ", el("b",{},[c.name])]),
+        typed,
+        el("div",{class:"confirm-actions"},[
+          el("button",{class:"btn ghost small", onclick:close},["Cancel"]),
+          el("button",{class:"btn secondary small", disabled:(c.hidden || draft.filter(function(x){ return !x.hidden && !x.isNew; }).length <= 1) ? "disabled" : null, onclick:function(){
+            close(); c.hidden = true; saveBrandDraft(draft, c.name + " is hidden.");
+          }},["Hide instead"]),
+          delBtn
+        ])
+      ])
+    ]);
+    document.body.appendChild(overlay);
+    document.addEventListener("keydown", onKey);
+    setTimeout(function(){ try{ typed.focus(); }catch(e){} }, 0);
+  });
+}
+
 function buildBusinessSettingsView(){
   var wrap = document.createElement("div");
   if (!STATE.brandDraft) STATE.brandDraft = JSON.parse(JSON.stringify(currentBrandList()));
@@ -5551,12 +5680,17 @@ function buildBusinessSettingsView(){
     el("h2",{},["Business Settings"]),
     el("div",{style:"color:var(--ink-soft); font-size:13.5px; line-height:1.5;"},[
       "Set the logo and contact details for each company. They appear on invoices, quotations, statements, their PDFs and the QR code. Existing company names are locked, because renaming would hide records already saved under that name."
-    ])
+    ]),
+    el("div",{style:"color:var(--ink-soft); font-size:13.5px; line-height:1.5; margin-top:6px;"},[
+      "Hide company: it disappears from the app but its records are kept. Delete company: it is removed for good, with all its records."])
   ]));
 
   draft.forEach(function(c, idx){
     var panel = el("div",{class:"panel"});
-    panel.appendChild(el("h2",{},[c.name || "New company"]));
+    panel.appendChild(el("h2",{},[c.name || "New company",
+      c.hidden ? el("span",{style:"margin-left:10px; font-size:12px; font-weight:700; color:var(--ink-faint); border:1px solid var(--line-strong); border-radius:999px; padding:2px 10px; vertical-align:middle;"},["Hidden"]) : null]));
+    if (c.hidden) panel.appendChild(el("div",{style:"color:var(--ink-soft); font-size:13px; margin:-4px 0 12px;"},[
+      "This company is hidden: it doesn't show in the tabs, lists or reports. Its records are kept. Click \"Show again\" to bring it back."]));
 
     var logoBox = el("div",{style:"display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:14px;"});
     logoBox.appendChild(c.logo
@@ -5599,6 +5733,11 @@ function buildBusinessSettingsView(){
       panel.appendChild(el("div",{class:"form-actions"},[
         el("button",{class:"btn danger small", onclick:function(){ draft.splice(idx,1); render(); }},["Remove"])
       ]));
+    } else {
+      panel.appendChild(el("div",{class:"form-actions", style:"justify-content:flex-start; gap:8px;"},[
+        el("button",{class:"btn ghost small", onclick:function(){ companyToggleHidden(draft, idx); }},[c.hidden ? "Show again" : "Hide company"]),
+        el("button",{class:"btn danger small", onclick:function(){ companyDeleteFlow(draft, idx); }},["Delete company"])
+      ]));
     }
     wrap.appendChild(panel);
   });
@@ -5609,25 +5748,7 @@ function buildBusinessSettingsView(){
     }},["+ Add company"]),
     el("div",{style:"display:flex; gap:8px;"},[
       el("button",{class:"btn ghost", onclick:function(){ STATE.brandDraft = null; render(); }},["Discard changes"]),
-      el("button",{class:"btn", disabled:STATE.brandBusy?"disabled":null, onclick:function(){
-        var seen = {}, out = [];
-        for (var i=0;i<draft.length;i++){
-          var c = draft[i];
-          var name = (c.name||"").trim();
-          if (!name){ toast("Every company needs a name."); return; }
-          if (seen[name.toLowerCase()]){ toast("Two companies can't have the same name."); return; }
-          seen[name.toLowerCase()] = true;
-          var item = {name:name, email:(c.email||"").trim(), phone:(c.phone||"").trim(), website:(c.website||"").trim(),
-                      vatNumber:(c.vatNumber||"").trim(), vatRate:Math.max(0, Number(c.vatRate)||0)};
-          if (c.logo !== LOGO_DATA_URI) item.logo = c.logo || "";   // default logo is not duplicated into the database
-          out.push(item);
-        }
-        if (!db){ toast("Live sync unavailable — can't save right now."); return; }
-        cfgDoc("workspace").set({companies:out, updatedAt:new Date().toISOString()}).then(function(){
-          toast("Business settings saved.");
-          STATE.brandDraft = null; render();
-        }).catch(function(){ toast("Couldn't save — the logo may be too large. Try a smaller image."); });
-      }},["Save settings"])
+      el("button",{class:"btn", disabled:STATE.brandBusy?"disabled":null, onclick:function(){ saveBrandDraft(draft, "Business settings saved."); }},["Save settings"])
     ])
   ]));
 
@@ -7211,9 +7332,12 @@ function buildSheetView(){
     table.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Name"]), el("th",{class:"num"},["Amount"]), el("th",{class:"no-print"},[""])])]));
     rows.forEach(function(x){
       if (STATE.sheetEditId === x.id){ tb.appendChild(sheetEditRow(x, m)); return; }
+      var openEdit = function(){ STATE.sheetEditId = x.id; render(); };
       tb.appendChild(el("tr",{},[
-        el("td",{style:"white-space:normal; text-align:left;"},[el("bdi",{},[x.description || ""]), x.note ? el("span",{style:"color:var(--ink-faint); font-size:12px;"},["  · ", el("bdi",{},[x.note])]) : null]),
-        el("td",{class:"num mono"},[moneyC(x.amount, x.currency || "USD")]),
+        el("td",{style:"white-space:normal; text-align:left; cursor:pointer;", title:"Click to change the name or amount", onclick:openEdit},[
+          el("span",{class:"no-print", style:"color:var(--accent, #2563eb); font-size:13px; margin-right:6px;"},["✎"]),
+          el("bdi",{},[x.description || ""]), x.note ? el("span",{style:"color:var(--ink-faint); font-size:12px;"},["  · ", el("bdi",{},[x.note])]) : null]),
+        el("td",{class:"num mono", style:"cursor:pointer;", title:"Click to change the name or amount", onclick:openEdit},[moneyC(x.amount, x.currency || "USD")]),
         el("td",{class:"no-print del-cell", style:"white-space:nowrap;"},[
          el("button",{class:"icon-btn", title:"Edit", onclick:function(){ STATE.sheetEditId = x.id; render(); }},["✎"]),
          el("button",{class:"icon-btn", title:"Delete", onclick:function(){
@@ -7231,7 +7355,7 @@ function buildSheetView(){
     doc.appendChild(el("div",{class:"no-print", style:"display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-top:10px;"},[
       el("div",{style:"display:flex; gap:8px; align-items:center; flex-wrap:wrap;"},[
         el("button",{class:"btn ghost small", onclick:function(){ sheetAddLine(m, rows); }},["+ Add line"]),
-        el("span",{style:"color:var(--ink-faint); font-size:12.5px;"},[rows.length + " line(s). Click ✎ to correct a name or amount."])]),
+        el("span",{style:"color:var(--ink-faint); font-size:12.5px;"},[rows.length + " line(s). Click any name or amount to correct it."])]),
       el("button",{class:"btn danger small", onclick:function(){
         confirmDanger("All " + rows.length + " line(s) of " + sheetMonthLabel(m) + " (" + sheetTotalText(t) + ") will be deleted.", function(){
           Promise.all(rows.map(function(x){ return db.doc("expenses/" + x.id).delete(); })).then(function(){ toast("Month deleted."); }).catch(function(){ toast("Couldn't delete everything — try again."); });
