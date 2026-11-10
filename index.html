@@ -500,10 +500,11 @@ function isMainOrg(){ return ORG === OWNER_ORG; }
    accountant : Resellers, Invoices, Quotations, Monthly Payroll (view only)
    employee   : Task, Tickets
    Anyone linked to an employee record (users/{email}.employeeId) also gets "My Payslips". */
-var ROLES = ["admin","hr","accountant","employee"];
+var ROLES = ["admin","hr","accountant","sales","employee"];
 var ROLE_MODULES = {
   hr:["employees","schedules","tickets"],
-  accountant:["dashboard","collections","reports","resellers","transactions","jean","invoices","quotations","expenses","purchases","projects","employees"],
+  accountant:["dashboard","collections","reports","resellers","transactions","jean","invoices","quotations","weekly","expenses","purchases","projects","employees"],
+  sales:["invoices","quotations","schedules","weekly"],
   employee:["schedules","tickets"],
   reseller:["my-account"]
 };
@@ -511,6 +512,7 @@ var ROLE_LABELS = {
   admin:"Admin — full access",
   hr:"HR — employees, payroll, tasks & tickets",
   accountant:"Accountant — resellers, invoices, quotations, payroll (view)",
+  sales:"Sales — invoices, quotations, tasks & weekly report",
   employee:"Employee — tasks, tickets & own payslips",
   reseller:"Reseller portal — own account only"
 };
@@ -520,6 +522,8 @@ function roleOf(){ return STATE.currentUserRole; }
 function isAdminUser(){ return roleOf() === "admin"; }
 function hasHR(){ return roleOf() === "admin" || roleOf() === "hr"; }
 function hasFinance(){ return roleOf() === "admin" || roleOf() === "accountant"; }
+// sales: invoices, quotations, tasks and the weekly report (no resellers' money, expenses or payroll)
+function hasSales(){ return hasFinance() || roleOf() === "sales"; }
 function hasPayrollView(){ return hasHR() || roleOf() === "accountant"; }
 function allowedModules(){
   var list = roleOf() === "admin" ? null : (ROLE_MODULES[roleOf()] || []).slice();
@@ -1209,7 +1213,7 @@ function startData(){
   }catch(e){ STATE.resellersLoaded = true; }
 
   // invoices
-  if (!hasFinance()){ STATE.invoicesLoaded = true; } else try{
+  if (!hasSales()){ STATE.invoicesLoaded = true; } else try{
     unsubInvoices = orgQuery("invoices").onSnapshot(function(qs){
       var list = [];
       qs.docs.forEach(function(d){
@@ -1339,7 +1343,7 @@ function startData(){
   }catch(e){ STATE.payRulesLoaded = true; }
 
   // quotations
-  if (!hasFinance()){ STATE.quotationsLoaded = true; } else try{
+  if (!hasSales()){ STATE.quotationsLoaded = true; } else try{
     unsubQuotations = orgQuery("quotations").onSnapshot(function(qs){
       var list = [];
       qs.docs.forEach(function(d){
@@ -1519,7 +1523,7 @@ var AR = {
 "Family allow. paid":"التعويضات المدفوعة","Net due NSSF":"الصافي المستحق للضمان","Contract":"العقد","Costs":"الكلفة","Balance today":"الرصيد اليوم","Still owed (all time)":"المتبقي (كل الفترات)",
 "Collections":"التحصيل","Not due yet":"غير مستحق بعد","0–30 days":"0–30 يومًا","31–60 days":"31–60 يومًا","61–90 days":"61–90 يومًا","90+ days":"أكثر من 90 يومًا","Total owed to you":"إجمالي المستحق لك",
 "Resellers & invoices":"الموزّعون والفواتير","Resellers only":"الموزّعون فقط","Invoices only":"الفواتير فقط","Oldest first":"الأقدم أولًا","Biggest first":"الأكبر أولًا","Search name or phone…":"ابحث بالاسم أو الهاتف…",
-"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
+"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
 "never":"أبدًا","today":"اليوم","Invoice":"فاتورة","Reseller":"موزّع",
 "My Account":"حسابي","Reseller portal — own account only":"بوابة الموزّع — حسابه فقط","Account not found":"الحساب غير موجود","Please contact us.":"يرجى التواصل معنا.","Download statement (PDF)":"تنزيل كشف الحساب (PDF)",
 "Amount due":"المبلغ المستحق","Credit balance":"رصيد دائن","My services":"خدماتي","Total per month":"المجموع الشهري","My statement":"كشف حسابي","Support":"الدعم","Report a problem":"الإبلاغ عن مشكلة","Send":"إرسال",
@@ -1636,7 +1640,7 @@ var AR_RULES = [
   [/^Password reset link sent to (.+)\.$/, "تم إرسال رابط إعادة التعيين إلى $1."],
   [/^You were signed out after (\d+) minutes without activity\. Please sign in again\.$/, "تم تسجيل خروجك بعد $1 دقيقة دون نشاط. يرجى تسجيل الدخول مجددًا."],
   [/^Recharges (\d{4})$/, "التعبئات $1"], [/^Payments (\d{4})$/, "الدفعات $1"], [/^Bills (\d{4})$/, "الفواتير $1"], [/^Spent (\d{4})$/, "المصروف $1"], [/^Paid (\d{4})$/, "المدفوع $1"],
-  [/^Send next reminder → (.+)$/, "إرسال التذكير التالي ← $1"], [/^Money (.+) received$/, "المال الذي استلمه $1"], [/^Money (.+) paid or spent$/, "المال الذي دفعه أو صرفه $1"], [/^Paid \/ spent by (.+)$/, "دفعه أو صرفه $1"], [/^Received by (.+)$/, "استلمه $1"], [/^Cash (.+) · Whish (.+)$/, "نقدًا $1 · ويش $2"], [/^Still on (.+) = from before \+ received − paid \/ spent\. It carries to the next month\. This page is not linked to resellers, suppliers or expenses\.$/, "الباقي على $1 = من قبل + المستلَم − المدفوع / المصروف، ويُرحَّل إلى الشهر التالي. هذه الصفحة غير مرتبطة بالموزّعين أو المورّدين أو المصاريف."], [/^Still on (.+)$/, "الباقي على $1"], [/^(\d+) sent today · (\d+) left$/, "$1 أُرسل اليوم · $2 متبقٍّ"], [/^(\d+) without a phone number$/, "$1 بدون رقم هاتف"], [/^Bring back skipped \((\d+)\)$/, "إعادة المتخطَّين ($1)"], [/^due in (\d+)d$/, "يستحق بعد $1 يوم"], [/^(\d+)d$/, "$1 يوم"],
+  [/^Send next reminder → (.+)$/, "إرسال التذكير التالي ← $1"], [/^(\d+) open line\(s\) assigned to (.+) · (\d+) late$/, "$1 سطر مفتوح مُسند إلى $2 · $3 متأخر"], [/^(\d+) open line\(s\) assigned to (.+)$/, "$1 سطر مفتوح مُسند إلى $2"], [/^Money (.+) received$/, "المال الذي استلمه $1"], [/^Money (.+) paid or spent$/, "المال الذي دفعه أو صرفه $1"], [/^Paid \/ spent by (.+)$/, "دفعه أو صرفه $1"], [/^Received by (.+)$/, "استلمه $1"], [/^Cash (.+) · Whish (.+)$/, "نقدًا $1 · ويش $2"], [/^Still on (.+) = from before \+ received − paid \/ spent\. It carries to the next month\. This page is not linked to resellers, suppliers or expenses\.$/, "الباقي على $1 = من قبل + المستلَم − المدفوع / المصروف، ويُرحَّل إلى الشهر التالي. هذه الصفحة غير مرتبطة بالموزّعين أو المورّدين أو المصاريف."], [/^Still on (.+)$/, "الباقي على $1"], [/^(\d+) sent today · (\d+) left$/, "$1 أُرسل اليوم · $2 متبقٍّ"], [/^(\d+) without a phone number$/, "$1 بدون رقم هاتف"], [/^Bring back skipped \((\d+)\)$/, "إعادة المتخطَّين ($1)"], [/^due in (\d+)d$/, "يستحق بعد $1 يوم"], [/^(\d+)d$/, "$1 يوم"],
   [/^(\d+) debt\(s\) older than 60 days$/, "$1 دين أقدم من 60 يومًا"],
   [/^Welcome, (.+)$/, "أهلًا، $1"], [/^Login created for (.+)\.$/, "تم إنشاء حساب الدخول لـ $1."],
   [/^Received (.+)$/, "المستلم $1"], [/^Still expected: (\d+)(.*)$/, "متبقٍ: $1"],
@@ -1863,6 +1867,7 @@ function renderTopBar(){
     {id:"purchases", label:"Purchases"},
     {id:"projects", label:"Projects"},
     {id:"schedules", label:"Task"},
+    {id:"weekly", label:"Weekly Report"},
     {id:"inventory", label:"Inventory"},
     {id:"tickets", label:"Tickets"},
     {id:"team-access", label:"Team Access", adminOnly:true},
@@ -3676,14 +3681,14 @@ function buildInvoicesListView(){
 
   var toolbar = el("div",{class:"toolbar"});
   toolbar.appendChild(el("input",{class:"search-input", type:"text", placeholder:"Search by client or invoice number…", value:STATE.invoiceSearch, oninput:function(e){ STATE.invoiceSearch = e.target.value; render(); }}));
-  toolbar.appendChild(el("button",{class:"btn secondary", onclick:function(){ STATE.editingSettings = !STATE.editingSettings; render(); }},["Settings"]));
+  if (hasFinance()) toolbar.appendChild(el("button",{class:"btn secondary", onclick:function(){ STATE.editingSettings = !STATE.editingSettings; render(); }},["Settings"]));
   toolbar.appendChild(el("button",{class:"btn secondary", onclick:function(){ openImport("invoices"); }},["Import from Excel"]));
   toolbar.appendChild(photoImportButton("invoices"));
   toolbar.appendChild(el("button",{class:"btn", onclick:function(){ openNewInvoice(); }},["+ New Invoice"]));
   wrap.appendChild(toolbar);
   if (STATE.imp && STATE.imp.kind === "invoices") wrap.appendChild(buildImportPanel());
 
-  if (STATE.editingSettings){
+  if (STATE.editingSettings && hasFinance()){
     wrap.appendChild(buildSettingsPanel());
   }
 
@@ -3904,7 +3909,7 @@ function buildInvoicePreviewView(){
       db.doc("invoices/"+inv.id).update({status:newStatus, paidAt:newStatus === "paid" ? localToday() : ""}).then(function(){ toast(newStatus==="paid"?"Marked as paid.":"Marked as unpaid."); }).catch(function(){});
     }},[inv.status === "paid" ? "Mark Unpaid" : "Mark Paid"]),
     el("button",{class:"btn ghost small", onclick:function(){ generateInvoicePdf(inv, totals); }},["Download PDF"]),
-    el("button",{class:"btn danger small", onclick:function(){
+    !hasFinance() ? null : el("button",{class:"btn danger small", onclick:function(){
       if (!db) return;
       confirmDanger("Invoice " + (inv.invoiceNumber||"") + " will be deleted permanently.", function(){
         db.doc("invoices/"+inv.id).delete().then(function(){ toast("Invoice deleted."); STATE.invoiceView="list"; STATE.selectedInvoiceId=null; render(); }).catch(function(){ toast("Couldn't delete — try again."); });
@@ -3912,7 +3917,7 @@ function buildInvoicePreviewView(){
     }},["Delete"])
   ]);
   wrap.appendChild(actions);
-  if (hasFinance()) wrap.appendChild(buildFilesPanel("invoices", inv.id, "Attached files (photos, PDFs)"));
+  if (hasSales()) wrap.appendChild(buildFilesPanel("invoices", inv.id, "Attached files (photos, PDFs)"));
 
   var doc = el("div",{class:"invoice-doc printable-doc"});
   doc.appendChild(el("div",{class:"iv-head"},[
@@ -4735,7 +4740,7 @@ function buildQuotationPreviewView(){
       actionChildren.push(el("button",{class:"btn secondary small", onclick:function(){ convertQuoteToInvoice(q); }},["Convert to Invoice"]));
     }
   }
-  actionChildren.push(el("button",{class:"btn danger small", onclick:function(){
+  if (hasFinance()) actionChildren.push(el("button",{class:"btn danger small", onclick:function(){
     if (!db) return;
     confirmDanger("Quotation " + (q.quotationNumber||"") + " will be deleted permanently.", function(){
       db.doc("quotations/"+q.id).delete().then(function(){ toast("Quotation deleted."); STATE.quotationView="list"; STATE.selectedQuotationId=null; render(); }).catch(function(){ toast("Couldn't delete — try again."); });
@@ -4743,7 +4748,7 @@ function buildQuotationPreviewView(){
   }},["Delete"]));
 
   wrap.appendChild(el("div",{class:"inv-actions"},actionChildren));
-  if (hasFinance()) wrap.appendChild(buildFilesPanel("quotations", q.id, "Attached files (photos, PDFs)"));
+  if (hasSales()) wrap.appendChild(buildFilesPanel("quotations", q.id, "Attached files (photos, PDFs)"));
 
   var doc = el("div",{class:"invoice-doc printable-doc"});
   doc.appendChild(el("div",{class:"iv-head"},[
@@ -9594,6 +9599,218 @@ function buildJeanView(){
   return wrap;
 }
 
+/* ============================== WEEKLY REPORT ==============================
+   One line per customer or task: what was done, what is still to do, when it is planned, who it is
+   assigned to and its status (Ongoing / Closed / Cancelled). Everyone who can open this page sees the
+   lines of their companies; "Assigned to me" shows only the lines given to the person signed in.
+   The people you can assign to are kept in config/reportPeople (name + login email), set by an admin. */
+var WR_STATUSES = [["ongoing","Ongoing"],["closed","Closed"],["cancelled","Cancelled"]];
+var WR_DEFAULT_PEOPLE = ["Rachelle","Jean","Daniel","Johny","Michael"];
+var unsubWeekly = null, unsubWrPeople = null;
+function watchWeekly(){
+  if (!ORG || !db || !hasSales()) return;
+  if (!unsubWeekly){
+    STATE.wrLoaded = false;
+    try{
+      unsubWeekly = orgQuery("weeklyReports").onSnapshot(function(qs){
+        STATE.weekly = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+        STATE.wrLoaded = true; STATE.wrError = false; render();
+      }, function(){ STATE.weekly = []; STATE.wrLoaded = true; STATE.wrError = true; render(); });
+    }catch(e){ STATE.weekly = []; STATE.wrLoaded = true; STATE.wrError = true; }
+  }
+  if (!unsubWrPeople){
+    try{
+      unsubWrPeople = cfgDoc("reportPeople").onSnapshot(function(snap){
+        var d = (snap.exists && snap.data()) || {};
+        STATE.wrPeople = Array.isArray(d.people) && d.people.length ? d.people.filter(function(p){ return p && p.name; })
+          : WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; });
+        render();
+      }, function(){ STATE.wrPeople = WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; }); });
+    }catch(e){}
+  }
+}
+function stopWeekly(){
+  [unsubWeekly, unsubWrPeople].forEach(function(u){ if (u){ try{ u(); }catch(e){} } });
+  unsubWeekly = unsubWrPeople = null; STATE.weekly = []; STATE.wrLoaded = false;
+}
+function wrPeople(){ return (STATE.wrPeople && STATE.wrPeople.length) ? STATE.wrPeople : WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; }); }
+function wrMe(){
+  var me = (STATE.currentUserEmail || "").toLowerCase();
+  var p = wrPeople().filter(function(x){ return (x.email || "").toLowerCase() === me && me; })[0];
+  return p ? p.name : "";
+}
+function wrStatusLabel(s){ return (WR_STATUSES.filter(function(x){ return x[0] === s; })[0] || ["", "Ongoing"])[1]; }
+function wrStatusCls(s){ return s === "closed" ? "paid" : (s === "cancelled" ? "draft" : "sent"); }
+function wrLate(r){ return (r.status || "ongoing") === "ongoing" && r.plannedDate && r.plannedDate < localToday(); }
+function wrFmt(d){ if (!d) return ""; var p = d.split("-"); return p.length === 3 ? p[2] + "/" + p[1] + "/" + p[0] : d; }
+
+function wrFiltered(){
+  var me = wrMe(), q = (STATE.wrSearch || "").toLowerCase();
+  var who = STATE.wrWho === undefined ? (me && !isAdminUser() ? "__me" : "") : STATE.wrWho;
+  var st = STATE.wrStatus === undefined ? "ongoing" : STATE.wrStatus;
+  return (STATE.weekly || []).filter(function(r){
+    if ((r.company || "Libancom") !== STATE.company) return false;
+    if (who === "__me" && r.assignedTo !== me) return false;
+    if (who && who !== "__me" && r.assignedTo !== who) return false;
+    if (st && (r.status || "ongoing") !== st) return false;
+    if (STATE.wrFrom && (r.date || "") < STATE.wrFrom) return false;
+    if (STATE.wrTo && (r.date || "") > STATE.wrTo) return false;
+    return !q || [r.subject, r.done, r.todo, r.note, r.assignedTo].join(" ").toLowerCase().indexOf(q) !== -1;
+  }).sort(function(a,b){
+    var la = wrLate(a) ? 0 : 1, lb = wrLate(b) ? 0 : 1;
+    if (la !== lb) return la - lb;
+    return (b.date || "").localeCompare(a.date || "") || (b.createdAt || "").localeCompare(a.createdAt || "");
+  });
+}
+
+function wrExport(list){
+  if (!window.XLSX){ toast("Excel tools are still loading — try again in a moment."); return; }
+  var aoa = [["Weekly report — " + STATE.company + " — " + localToday()], [],
+    ["Date", "Customer / task", "Action done", "Action to be done", "Planned date", "Assigned to", "Status", "Note"]];
+  list.forEach(function(r){ aoa.push([r.date || "", r.subject || "", r.done || "", r.todo || "", r.plannedDate || "", r.assignedTo || "", wrStatusLabel(r.status || "ongoing"), r.note || ""]); });
+  var wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"] = [{wch:12}, {wch:26}, {wch:36}, {wch:36}, {wch:13}, {wch:14}, {wch:11}, {wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws, "Weekly report");
+  XLSX.writeFile(wb, "weekly-report-" + slugify(STATE.company) + "-" + localToday() + ".xlsx");
+}
+
+function buildWrForm(){
+  var F = STATE.wrForm, isEdit = !!F.id;
+  var p = el("div",{class:"panel", style:"margin-bottom:16px;"});
+  p.appendChild(el("h2",{},[isEdit ? "Edit line" : "New line"]));
+  var people = wrPeople().map(function(x){ return x.name; });
+  if (F.assignedTo && people.indexOf(F.assignedTo) === -1) people.push(F.assignedTo);
+  var inp = function(key, attrs){ return el(attrs.tag || "input", Object.assign({dir:"auto", value:F[key] || "", oninput:function(e){ F[key] = e.target.value; }, onchange:function(e){ F[key] = e.target.value; }}, attrs.a || {}), attrs.kids || []); };
+  p.appendChild(el("div",{class:"form-grid"},[
+    el("div",{class:"field"},[el("label",{},["Date"]), inp("date", {a:{type:"date"}})]),
+    el("div",{class:"field"},[el("label",{},["Customer or task name *"]), inp("subject", {a:{type:"text", placeholder:"e.g. Net Star, Tabarja link"}})]),
+    el("div",{class:"field"},[el("label",{},["Assigned to *"]), el("select",{onchange:function(e){ F.assignedTo = e.target.value; }},
+      [el("option",{value:""},["Choose…"])].concat(people.map(function(n){ return el("option",{value:n, selected:F.assignedTo === n ? "selected" : null},[n]); })))]),
+    el("div",{class:"field"},[el("label",{},["Status"]), el("select",{onchange:function(e){ F.status = e.target.value; }},
+      WR_STATUSES.map(function(s){ return el("option",{value:s[0], selected:(F.status || "ongoing") === s[0] ? "selected" : null},[s[1]]); }))]),
+    el("div",{class:"field"},[el("label",{},["Planned date"]), inp("plannedDate", {a:{type:"date"}})])
+  ]));
+  var area = function(key, label, ph){ return el("div",{class:"field", style:"margin-bottom:12px;"},[el("label",{},[label]),
+    el("textarea",{dir:"auto", rows:"3", placeholder:ph, style:"width:100%; box-sizing:border-box; resize:vertical;", oninput:function(e){ F[key] = e.target.value; }},[F[key] || ""])]); };
+  p.appendChild(area("done", "Action done", "What was done"));
+  p.appendChild(area("todo", "Action to be done", "What is still to do"));
+  p.appendChild(el("div",{class:"field", style:"margin-bottom:14px;"},[el("label",{},["Note"]), inp("note", {a:{type:"text", placeholder:"Optional"}})]));
+  p.appendChild(el("div",{class:"form-actions"},[
+    el("button",{class:"btn ghost", onclick:function(){ STATE.wrForm = null; render(); }},["Cancel"]),
+    el("button",{class:"btn", onclick:function(){
+      var subject = (F.subject || "").trim();
+      if (!subject){ toast("Write the customer or task name."); return; }
+      if (!F.assignedTo){ toast("Choose who it is assigned to."); return; }
+      if (!db){ toast("Live sync unavailable — can't save right now."); return; }
+      var now = new Date().toISOString();
+      var data = {date:F.date || localToday(), subject:subject, done:(F.done || "").trim(), todo:(F.todo || "").trim(), plannedDate:F.plannedDate || "",
+        assignedTo:F.assignedTo, status:F.status || "ongoing", note:(F.note || "").trim(), updatedAt:now, updatedBy:STATE.currentUserEmail || ""};
+      var fail = function(err){ toast(/permission|insufficient/i.test(String(err && (err.code || err.message))) ? "Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added." : "Couldn't save — try again."); };
+      var op = isEdit ? db.doc("weeklyReports/" + F.id).update(data)
+        : db.collection("weeklyReports").add(withOrg(Object.assign(data, {company:STATE.company, createdAt:now, createdBy:STATE.currentUserEmail || ""})));
+      op.then(function(){ toast("Saved."); STATE.wrForm = null; render(); }).catch(fail);
+    }},["Save"])
+  ]));
+  return p;
+}
+
+function buildWrPeopleEditor(){
+  var list = wrPeople().map(function(x){ return {name:x.name, email:x.email || ""}; });
+  var box = el("div",{class:"panel", style:"margin-bottom:16px;"});
+  box.appendChild(el("h2",{},["People you can assign to"]));
+  box.appendChild(el("div",{style:"color:var(--ink-soft); font-size:13px; margin-bottom:10px;"},["Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login."]));
+  var rows = el("div");
+  list.forEach(function(p, i){
+    rows.appendChild(el("div",{style:"display:flex; gap:8px; margin-bottom:6px; flex-wrap:wrap;"},[
+      el("input",{type:"text", dir:"auto", value:p.name, placeholder:"Name", style:"flex:1 1 140px;", oninput:function(e){ list[i].name = e.target.value; }}),
+      el("input",{type:"email", value:p.email, placeholder:"Login email (optional)", style:"flex:2 1 220px;", oninput:function(e){ list[i].email = e.target.value; }}),
+      el("button",{class:"icon-btn", title:"Remove", onclick:function(){ list.splice(i,1); STATE.wrPeople = list.slice(); render(); }},["✕"])
+    ]));
+  });
+  box.appendChild(rows);
+  box.appendChild(el("div",{class:"form-actions"},[
+    el("button",{class:"btn ghost", onclick:function(){ list.push({name:"", email:""}); STATE.wrPeople = list.slice(); render(); }},["+ Add person"]),
+    el("div",{style:"flex:1;"}),
+    el("button",{class:"btn ghost", onclick:function(){ STATE.wrEditPeople = false; render(); }},["Close"]),
+    el("button",{class:"btn", onclick:function(){
+      var clean = list.map(function(p){ return {name:(p.name || "").trim(), email:(p.email || "").trim().toLowerCase()}; }).filter(function(p){ return p.name; });
+      if (!clean.length){ toast("Add at least one name."); return; }
+      cfgDoc("reportPeople").set({people:clean, updatedAt:new Date().toISOString()})
+        .then(function(){ toast("Saved."); STATE.wrEditPeople = false; render(); }).catch(function(){ toast("Couldn't save — only an admin can change this list."); });
+    }},["Save"])
+  ]));
+  return box;
+}
+
+function buildWeeklyView(){
+  var wrap = document.createElement("div");
+  watchWeekly();
+  if (!STATE.wrLoaded){ wrap.appendChild(el("div",{},["Loading…"])); return wrap; }
+  var me = wrMe(), list = wrFiltered();
+  var who = STATE.wrWho === undefined ? (me && !isAdminUser() ? "__me" : "") : STATE.wrWho;
+  var st = STATE.wrStatus === undefined ? "ongoing" : STATE.wrStatus;
+  var mine = (STATE.weekly || []).filter(function(r){ return me && r.assignedTo === me && (r.status || "ongoing") === "ongoing" && (r.company || "Libancom") === STATE.company; });
+
+  var whoSel = el("select",{onchange:function(e){ STATE.wrWho = e.target.value; render(); }},
+    [el("option",{value:"", selected:!who ? "selected" : null},["Everyone"])]
+      .concat(me ? [el("option",{value:"__me", selected:who === "__me" ? "selected" : null},["Assigned to me"])] : [])
+      .concat(wrPeople().map(function(p){ return el("option",{value:p.name, selected:who === p.name ? "selected" : null},[p.name]); })));
+  var stSel = el("select",{onchange:function(e){ STATE.wrStatus = e.target.value; render(); }},
+    [el("option",{value:"", selected:!st ? "selected" : null},["All statuses"])].concat(WR_STATUSES.map(function(s){ return el("option",{value:s[0], selected:st === s[0] ? "selected" : null},[s[1]]); })));
+  wrap.appendChild(el("div",{class:"toolbar"},[
+    el("input",{class:"search-input", type:"text", placeholder:"Search…", value:STATE.wrSearch || "", oninput:function(e){ STATE.wrSearch = e.target.value; render(); }}),
+    whoSel, stSel,
+    el("input",{type:"date", title:"From", value:STATE.wrFrom || "", style:"width:150px;", onchange:function(e){ STATE.wrFrom = e.target.value; render(); }}),
+    el("input",{type:"date", title:"To", value:STATE.wrTo || "", style:"width:150px;", onchange:function(e){ STATE.wrTo = e.target.value; render(); }}),
+    el("div",{style:"flex:1;"}),
+    isAdminUser() ? el("button",{class:"btn ghost small", onclick:function(){ STATE.wrEditPeople = !STATE.wrEditPeople; render(); }},["People"]) : null,
+    el("button",{class:"btn ghost small", onclick:function(){ wrExport(list); }},["Export Excel"]),
+    el("button",{class:"btn", onclick:function(){ STATE.wrForm = {date:localToday(), status:"ongoing", assignedTo:me}; render(); }},["+ New line"])
+  ]));
+  if (STATE.wrError) wrap.appendChild(el("div",{class:"sync-banner"},["This page can't load yet — the Firebase security rules need \"weeklyReports\" added."]));
+  if (STATE.wrEditPeople && isAdminUser()) wrap.appendChild(buildWrPeopleEditor());
+  if (STATE.wrForm) wrap.appendChild(buildWrForm());
+  if (me) wrap.appendChild(el("div",{style:"margin-bottom:12px; font-size:13px; color:var(--ink-soft); font-weight:600;"},[
+    mine.length + " open line(s) assigned to " + me + (mine.filter(wrLate).length ? " · " + mine.filter(wrLate).length + " late" : "")]));
+
+  if (!list.length){
+    wrap.appendChild(el("div",{class:"empty-state"},[el("h3",{},[(STATE.weekly || []).length ? "Nothing in this selection." : "No lines yet."]),
+      el("div",{},["Click \"+ New line\" to add a customer or task."])]));
+    return wrap;
+  }
+  var t = el("table"), tb = el("tbody");
+  t.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Date"]), el("th",{},["Customer / task"]), el("th",{},["Action done"]), el("th",{},["Action to be done"]),
+    el("th",{},["Planned"]), el("th",{},["Assigned to"]), el("th",{},["Status"]), el("th",{},["Note"]), el("th",{},[""])])]));
+  list.forEach(function(r){
+    var s = r.status || "ongoing";
+    var quick = el("select",{class:"status-pill " + wrStatusCls(s), style:"border:none; cursor:pointer; font-weight:700;", onchange:function(e){
+      db.doc("weeklyReports/" + r.id).update({status:e.target.value, updatedAt:new Date().toISOString(), updatedBy:STATE.currentUserEmail || ""})
+        .catch(function(){ toast("Couldn't save — try again."); });
+    }}, WR_STATUSES.map(function(x){ return el("option",{value:x[0], selected:s === x[0] ? "selected" : null},[x[1]]); }));
+    tb.appendChild(el("tr",{},[
+      el("td",{class:"mono", style:"white-space:nowrap;"},[wrFmt(r.date)]),
+      el("td",{style:"font-weight:700;"},[el("bdi",{},[r.subject || "—"])]),
+      el("td",{style:"white-space:pre-wrap; min-width:160px;"},[el("bdi",{},[r.done || ""])]),
+      el("td",{style:"white-space:pre-wrap; min-width:160px;"},[el("bdi",{},[r.todo || ""])]),
+      el("td",{class:"mono", style:"white-space:nowrap;" + (wrLate(r) ? " color:var(--bad); font-weight:800;" : "")},[wrFmt(r.plannedDate)]),
+      el("td",{},[el("bdi",{},[r.assignedTo || ""])]),
+      el("td",{},[quick]),
+      el("td",{style:"white-space:pre-wrap; color:var(--ink-soft); font-size:12.5px;"},[el("bdi",{},[r.note || ""])]),
+      el("td",{style:"white-space:nowrap;"},[
+        el("button",{class:"icon-btn", title:"Edit", onclick:function(){ STATE.wrForm = Object.assign({}, r); render(); window.scrollTo(0,0); }},["✎"]),
+        hasFinance() ? el("button",{class:"icon-btn", title:"Delete", onclick:function(){
+          confirmDanger("\"" + (r.subject || "") + "\" will be deleted from the weekly report.", function(){
+            db.doc("weeklyReports/" + r.id).delete().then(function(){ toast("Deleted."); }).catch(function(){ toast("Couldn't delete — try again."); });
+          }, "Delete");
+        }},["✕"]) : null
+      ])
+    ]));
+  });
+  t.appendChild(tb);
+  wrap.appendChild(el("div",{class:"table-wrap"},[t]));
+  return wrap;
+}
+
 /* ============================== REPORTS ============================== */
 
 var REPORTS = [
@@ -9965,6 +10182,11 @@ function render(){
     return;
   }
 
+  if (STATE.module === "weekly" && hasSales()){
+    main.appendChild(buildWeeklyView());
+    return;
+  }
+
   if (STATE.module === "jean" && hasFinance()){
     main.appendChild(buildJeanView());
     return;
@@ -10090,7 +10312,7 @@ function teardownSubscriptions(){
   unsubExpenses = unsubSuppliers = unsubRecurring = unsubExpSettings = unsubProjects = unsubBackupInfo = unsubPOs = unsubSecurity = null;
   stopActivitySub(); STATE.recurringRanFor = null; STATE.dashKey = null; STATE.repPayKey = null;
   if (unsubCollectors){ try{ unsubCollectors(); }catch(e){} unsubCollectors = null; }
-  stopAttSubs(); stopTxListeners(); stopJean();
+  stopAttSubs(); stopTxListeners(); stopJean(); stopWeekly();
   STATE.payRunKey = null;
 }
 
