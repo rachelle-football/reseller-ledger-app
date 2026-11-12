@@ -1494,7 +1494,7 @@ var AR = {
 "Quote Date":"تاريخ العرض","Radio":"راديو","Rate":"السعر","Recharge (debit)":"تعبئة (مدين)","Record Payment":"تسجيل دفعة","Region":"المنطقة","Rejected":"مرفوض","Remove":"إزالة","Remove access to this workspace":"إزالة الوصول لمساحة العمل","Remove line":"إزالة البند","Remove logo":"إزالة الشعار","Repair":"تصليح",
 "Reseller":"موزّع","Reseller added.":"تمت إضافة الموزّع.","Reseller not found":"الموزّع غير موجود","Reseller updated.":"تم تحديث الموزّع.","Resolved":"محلولة","Resolved/Closed":"محلولة/مغلقة","Responsible":"المسؤول","Role":"الدور","Router":"راوتر","STATEMENT":"كشف حساب",
 "Salary Amount":"قيمة الراتب","Salary Details":"تفاصيل الراتب","Save":"حفظ","Save Access Level":"حفظ الصلاحية","Save Changes":"حفظ التغييرات","Save Employee":"حفظ الموظف","Save Invoice":"حفظ الفاتورة","Save Item":"حفظ العنصر","Save Quotation":"حفظ عرض السعر","Save Reseller":"حفظ الموزّع","Save Task":"حفظ المهمة","Save Ticket":"حفظ التذكرة","Save settings":"حفظ الإعدادات","All payments":"كل الدفعات","Monthly bill":"الفاتورة الشهرية","Account":"الحساب","← All suppliers":"← كل المورّدين","Monthly bill settings":"إعدادات الفاتورة الشهرية","You owe now":"المتبقي عليك الآن","Nothing owed":"لا شيء عليك","Paid in advance":"مدفوع مسبقًا","This month's bill":"فاتورة هذا الشهر","Paid this month":"المدفوع هذا الشهر","Month by month":"شهرًا بشهر","From before":"من قبل","Bill":"الفاتورة","Set up the monthly bill":"إعداد الفاتورة الشهرية","First month":"أول شهر","Owed before that month":"المتبقي قبل ذلك الشهر","Payment saved.":"تم حفظ الدفعة.","Monthly bill saved.":"تم حفظ الفاتورة الشهرية.","Collected by":"قبضها","Everyone":"الجميع","Cash + Whish":"نقدًا + Whish","This month":"هذا الشهر","Last month":"الشهر الماضي","Clear filters":"إلغاء الفلاتر","Edit names":"تعديل الأسماء","People who collect payments":"الأشخاص الذين يقبضون","Payments":"الدفعات","Not set":"غير محدد","No payments for these filters.":"لا توجد دفعات لهذه الفلاتر.","No transactions for these filters.":"لا توجد حركات لهذه الفلاتر.","Choose…":"اختر…","+ Add":"+ إضافة","Totals by reseller (all dates)":"المجاميع حسب الموزّع (كل التواريخ)","Payment updated.":"تم تعديل الدفعة.","Choose who collected the payment.":"اختر من قبض الدفعة.","Hide company":"إخفاء الشركة","Show again":"إظهار مجددًا","Delete company":"حذف الشركة","Hidden":"مخفية","Hide instead":"إخفاء بدلاً من ذلك","Delete everything":"حذف كل شيء","Hide":"إخفاء",
-"Search by client or invoice number…":"ابحث باسم الزبون أو رقم الفاتورة…","Search by client or quotation number…":"ابحث باسم الزبون أو رقم العرض…","Search by site/client, responsible, or task type…":"ابحث بالموقع/الزبون أو المسؤول أو نوع المهمة…","Search by ticket #, subject, category, assignee, or problem…":"ابحث برقم التذكرة أو الموضوع أو الفئة أو المسؤول أو المشكلة…",
+"Search by client or invoice number…":"ابحث باسم الزبون أو رقم الفاتورة…","Search by client or quotation number…":"ابحث باسم الزبون أو رقم العرض…","Search by site/client, responsible, or task type…":"ابحث بالموقع/الزبون أو المسؤول أو نوع المهمة…","Search by site/client, assigned person, or task type…":"ابحث بالموقع/الزبون أو الشخص المُسند إليه أو نوع المهمة…","Search by ticket #, subject, category, assignee, or problem…":"ابحث برقم التذكرة أو الموضوع أو الفئة أو المسؤول أو المشكلة…",
 "Search by type, serial, module, or brand…":"ابحث بالنوع أو الرقم التسلسلي أو الموديل أو الماركة…","Search employees by name, position, or nationality…":"ابحث عن موظف بالاسم أو المنصب أو الجنسية…","Search resellers by name, contact, or region…":"ابحث عن موزّع بالاسم أو الشخص المسؤول أو المنطقة…",
 "Select a reseller.":"اختر موزّعًا.","Select reseller…":"اختر موزّعًا…","Select…":"اختر…","Sent":"مُرسَل","Serial Number":"الرقم التسلسلي","Serial number is required.":"الرقم التسلسلي مطلوب.","Service":"الخدمة","Set Access Level":"تحديد الصلاحية",
 "Set the logo and contact details for each company. They appear on invoices, quotations, statements, their PDFs and the QR code. Existing company names are locked, because renaming would hide records already saved under that name.":"حدّد الشعار وبيانات الاتصال لكل شركة. تظهر على الفواتير وعروض الأسعار وكشوف الحساب وملفات PDF ورمز QR. أسماء الشركات الحالية مقفلة لأن تغييرها يُخفي السجلات المحفوظة بهذا الاسم.",
@@ -4854,7 +4854,14 @@ function buildScheduleForm(existing){
 
   var siteField = el("div",{class:"field"},[el("label",{},["Site / Client"]), el("input",{type:"text", id:"tf-site", value:isEdit?(existing.siteClient||""):""})]);
   var dueField = el("div",{class:"field"},[el("label",{},["Planned Due Date"]), el("input",{type:"date", id:"tf-due", value:isEdit?(existing.plannedDueDate||""):""})]);
-  var respField = el("div",{class:"field"},[el("label",{},["Responsible"]), el("input",{type:"text", id:"tf-resp", value:isEdit?(existing.responsible||""):""})]);
+  // "Assigned to": the people of this company (same list as the Weekly Report → People); free text if no list is set
+  watchWeekly();
+  var curResp = isEdit ? (existing.responsible || "") : "";
+  var respPeople = wrPeople().map(function(p){ return p.name; });
+  if (curResp && respPeople.indexOf(curResp) === -1) respPeople.push(curResp);
+  var respField = el("div",{class:"field"},[el("label",{},["Assigned to"]), respPeople.length
+    ? el("select",{id:"tf-resp"},[el("option",{value:""},["Choose…"])].concat(respPeople.map(function(n){ return el("option",{value:n, selected:curResp === n ? "selected" : null},[n]); })))
+    : el("input",{type:"text", id:"tf-resp", value:curResp})]);
 
   var statusField = el("div",{class:"field"},[el("label",{},["Status"])]);
   var statusSelect = el("select",{id:"tf-status"});
@@ -4995,7 +5002,7 @@ function buildSchedulesListView(){
   ]));
 
   var toolbar = el("div",{class:"toolbar"});
-  toolbar.appendChild(el("input",{class:"search-input", type:"text", placeholder:"Search by site/client, responsible, or task type…", value:STATE.scheduleSearch, oninput:function(e){ STATE.scheduleSearch = e.target.value; render(); }}));
+  toolbar.appendChild(el("input",{class:"search-input", type:"text", placeholder:"Search by site/client, assigned person, or task type…", value:STATE.scheduleSearch, oninput:function(e){ STATE.scheduleSearch = e.target.value; render(); }}));
   var statusFilterSelect = el("select",{onchange:function(e){ STATE.scheduleStatusFilter = e.target.value; render(); }});
   [["all","All Statuses"]].concat(TASK_STATUSES.map(function(s){ return [s,s]; })).forEach(function(pair){
     statusFilterSelect.appendChild(el("option",{value:pair[0], selected:STATE.scheduleStatusFilter===pair[0]?"selected":null},[pair[1]]));
@@ -5030,7 +5037,7 @@ function buildSchedulesListView(){
   var table = el("table");
   table.appendChild(el("thead",{},[el("tr",{},[
     el("th",{},["Date"]), el("th",{},["Task Type"]), el("th",{},["Site / Client"]), el("th",{},["Planned Due"]),
-    el("th",{},["Responsible"]), el("th",{},["Status"]), el("th",{},["Notes"]), el("th",{class:"del-cell"},[""])
+    el("th",{},["Assigned to"]), el("th",{},["Status"]), el("th",{},["Notes"]), el("th",{class:"del-cell"},[""])
   ])]));
   var tbody = el("tbody");
   list.forEach(function(t){
@@ -8507,7 +8514,7 @@ function buildProjectDetail(){
     return sp;
   }
   wrap.appendChild(section("Tasks", "+ Add task", function(){ STATE.module = "schedules"; STATE.showScheduleForm = true; STATE.editingScheduleId = null; STATE.prefillProjectId = p.id; render(); },
-    [["Date"],["Task Type"],["Responsible"],["Planned Due"],["Status"]],
+    [["Date"],["Task Type"],["Assigned to"],["Planned Due"],["Status"]],
     f.tasks.slice().sort(function(a,b){ return (a.date||"") < (b.date||"") ? -1 : 1; }).map(function(t){
       return el("tr",{},[el("td",{class:"mono"},[t.date || "—"]), el("td",{},[t.taskType || ""]), el("td",{},[t.responsible || "—"]), el("td",{class:"mono"},[t.plannedDueDate || "—"]),
         el("td",{},[el("span",{class:"chip", style:scheduleStatusStyle(t.status || "Pending")},[t.status || "Pending"])])]); }),
