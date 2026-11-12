@@ -1640,7 +1640,7 @@ var AR_RULES = [
   [/^Password reset link sent to (.+)\.$/, "تم إرسال رابط إعادة التعيين إلى $1."],
   [/^You were signed out after (\d+) minutes without activity\. Please sign in again\.$/, "تم تسجيل خروجك بعد $1 دقيقة دون نشاط. يرجى تسجيل الدخول مجددًا."],
   [/^Recharges (\d{4})$/, "التعبئات $1"], [/^Payments (\d{4})$/, "الدفعات $1"], [/^Bills (\d{4})$/, "الفواتير $1"], [/^Spent (\d{4})$/, "المصروف $1"], [/^Paid (\d{4})$/, "المدفوع $1"],
-  [/^Send next reminder → (.+)$/, "إرسال التذكير التالي ← $1"], [/^(\d+) open line\(s\) assigned to (.+) · (\d+) late$/, "$1 سطر مفتوح مُسند إلى $2 · $3 متأخر"], [/^(\d+) open line\(s\) assigned to (.+)$/, "$1 سطر مفتوح مُسند إلى $2"], [/^Money (.+) received$/, "المال الذي استلمه $1"], [/^Money (.+) paid or spent$/, "المال الذي دفعه أو صرفه $1"], [/^Paid \/ spent by (.+)$/, "دفعه أو صرفه $1"], [/^Received by (.+)$/, "استلمه $1"], [/^Cash (.+) · Whish (.+)$/, "نقدًا $1 · ويش $2"], [/^Still on (.+) = from before \+ received − paid \/ spent\. It carries to the next month\. This page is not linked to resellers, suppliers or expenses\.$/, "الباقي على $1 = من قبل + المستلَم − المدفوع / المصروف، ويُرحَّل إلى الشهر التالي. هذه الصفحة غير مرتبطة بالموزّعين أو المورّدين أو المصاريف."], [/^Still on (.+)$/, "الباقي على $1"], [/^(\d+) sent today · (\d+) left$/, "$1 أُرسل اليوم · $2 متبقٍّ"], [/^(\d+) without a phone number$/, "$1 بدون رقم هاتف"], [/^Bring back skipped \((\d+)\)$/, "إعادة المتخطَّين ($1)"], [/^due in (\d+)d$/, "يستحق بعد $1 يوم"], [/^(\d+)d$/, "$1 يوم"],
+  [/^Send next reminder → (.+)$/, "إرسال التذكير التالي ← $1"], [/^People you can assign to — (.+)$/, "الأشخاص الذين يمكن الإسناد إليهم — $1"], [/^No people for (.+) yet — an admin adds them with the "People" button\.$/, "لا يوجد أشخاص لـ $1 بعد — يضيفهم المدير عبر زر «الأشخاص»."], [/^(\d+) open line\(s\) assigned to (.+) · (\d+) late$/, "$1 سطر مفتوح مُسند إلى $2 · $3 متأخر"], [/^(\d+) open line\(s\) assigned to (.+)$/, "$1 سطر مفتوح مُسند إلى $2"], [/^Money (.+) received$/, "المال الذي استلمه $1"], [/^Money (.+) paid or spent$/, "المال الذي دفعه أو صرفه $1"], [/^Paid \/ spent by (.+)$/, "دفعه أو صرفه $1"], [/^Received by (.+)$/, "استلمه $1"], [/^Cash (.+) · Whish (.+)$/, "نقدًا $1 · ويش $2"], [/^Still on (.+) = from before \+ received − paid \/ spent\. It carries to the next month\. This page is not linked to resellers, suppliers or expenses\.$/, "الباقي على $1 = من قبل + المستلَم − المدفوع / المصروف، ويُرحَّل إلى الشهر التالي. هذه الصفحة غير مرتبطة بالموزّعين أو المورّدين أو المصاريف."], [/^Still on (.+)$/, "الباقي على $1"], [/^(\d+) sent today · (\d+) left$/, "$1 أُرسل اليوم · $2 متبقٍّ"], [/^(\d+) without a phone number$/, "$1 بدون رقم هاتف"], [/^Bring back skipped \((\d+)\)$/, "إعادة المتخطَّين ($1)"], [/^due in (\d+)d$/, "يستحق بعد $1 يوم"], [/^(\d+)d$/, "$1 يوم"],
   [/^(\d+) debt\(s\) older than 60 days$/, "$1 دين أقدم من 60 يومًا"],
   [/^Welcome, (.+)$/, "أهلًا، $1"], [/^Login created for (.+)\.$/, "تم إنشاء حساب الدخول لـ $1."],
   [/^Received (.+)$/, "المستلم $1"], [/^Still expected: (\d+)(.*)$/, "متبقٍ: $1"],
@@ -9622,10 +9622,10 @@ function watchWeekly(){
     try{
       unsubWrPeople = cfgDoc("reportPeople").onSnapshot(function(snap){
         var d = (snap.exists && snap.data()) || {};
-        STATE.wrPeople = Array.isArray(d.people) && d.people.length ? d.people.filter(function(p){ return p && p.name; })
-          : WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; });
+        STATE.wrPeople = Array.isArray(d.people) ? d.people.filter(function(p){ return p && p.name; }) : [];
+        STATE.wrPeopleByCo = (d.byCompany && typeof d.byCompany === "object") ? d.byCompany : {};
         render();
-      }, function(){ STATE.wrPeople = WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; }); });
+      }, function(){ STATE.wrPeople = []; STATE.wrPeopleByCo = {}; });
     }catch(e){}
   }
 }
@@ -9633,7 +9633,13 @@ function stopWeekly(){
   [unsubWeekly, unsubWrPeople].forEach(function(u){ if (u){ try{ u(); }catch(e){} } });
   unsubWeekly = unsubWrPeople = null; STATE.weekly = []; STATE.wrLoaded = false;
 }
-function wrPeople(){ return (STATE.wrPeople && STATE.wrPeople.length) ? STATE.wrPeople : WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; }); }
+// each company has its own list of people (Libancom's people are never offered in Edisson and the other way round)
+function wrPeople(){
+  var own = (STATE.wrPeopleByCo || {})[STATE.company];
+  if (Array.isArray(own) && own.length) return own.filter(function(p){ return p && p.name; });
+  if (STATE.company !== "Libancom") return [];
+  return (STATE.wrPeople && STATE.wrPeople.length) ? STATE.wrPeople : WR_DEFAULT_PEOPLE.map(function(n){ return {name:n, email:""}; });
+}
 function wrMe(){
   var me = (STATE.currentUserEmail || "").toLowerCase();
   var p = wrPeople().filter(function(x){ return (x.email || "").toLowerCase() === me && me; })[0];
@@ -9680,6 +9686,7 @@ function buildWrForm(){
   p.appendChild(el("h2",{},[isEdit ? "Edit line" : "New line"]));
   var people = wrPeople().map(function(x){ return x.name; });
   if (F.assignedTo && people.indexOf(F.assignedTo) === -1) people.push(F.assignedTo);
+  if (!people.length) p.appendChild(el("div",{class:"sync-banner"},["No people for " + STATE.company + " yet — an admin adds them with the \"People\" button."]));
   var inp = function(key, attrs){ return el(attrs.tag || "input", Object.assign({dir:"auto", value:F[key] || "", oninput:function(e){ F[key] = e.target.value; }, onchange:function(e){ F[key] = e.target.value; }}, attrs.a || {}), attrs.kids || []); };
   p.appendChild(el("div",{class:"form-grid"},[
     el("div",{class:"field"},[el("label",{},["Date"]), inp("date", {a:{type:"date"}})]),
@@ -9717,7 +9724,7 @@ function buildWrForm(){
 function buildWrPeopleEditor(){
   var list = wrPeople().map(function(x){ return {name:x.name, email:x.email || ""}; });
   var box = el("div",{class:"panel", style:"margin-bottom:16px;"});
-  box.appendChild(el("h2",{},["People you can assign to"]));
+  box.appendChild(el("h2",{},["People you can assign to — " + STATE.company]));
   box.appendChild(el("div",{style:"color:var(--ink-soft); font-size:13px; margin-bottom:10px;"},["Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login."]));
   var rows = el("div");
   list.forEach(function(p, i){
@@ -9735,7 +9742,8 @@ function buildWrPeopleEditor(){
     el("button",{class:"btn", onclick:function(){
       var clean = list.map(function(p){ return {name:(p.name || "").trim(), email:(p.email || "").trim().toLowerCase()}; }).filter(function(p){ return p.name; });
       if (!clean.length){ toast("Add at least one name."); return; }
-      cfgDoc("reportPeople").set({people:clean, updatedAt:new Date().toISOString()})
+      var byCo = {}; byCo[STATE.company] = clean;
+      cfgDoc("reportPeople").set({byCompany:byCo, updatedAt:new Date().toISOString()}, {merge:true})
         .then(function(){ toast("Saved."); STATE.wrEditPeople = false; render(); }).catch(function(){ toast("Couldn't save — only an admin can change this list."); });
     }},["Save"])
   ]));
