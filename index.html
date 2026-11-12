@@ -500,12 +500,13 @@ function isMainOrg(){ return ORG === OWNER_ORG; }
    accountant : Resellers, Invoices, Quotations, Monthly Payroll (view only)
    employee   : Task, Tickets
    Anyone linked to an employee record (users/{email}.employeeId) also gets "My Payslips". */
-var ROLES = ["admin","hr","accountant","sales","employee"];
+var ROLES = ["admin","hr","accountant","sales","employee","person"];
 var ROLE_MODULES = {
   hr:["employees","schedules","tickets"],
   accountant:["dashboard","collections","reports","resellers","transactions","jean","invoices","quotations","weekly","expenses","purchases","projects","employees"],
   sales:["invoices","quotations","schedules","weekly"],
   employee:["schedules","tickets"],
+  person:["mypage"],
   reseller:["my-account"]
 };
 var ROLE_LABELS = {
@@ -514,6 +515,7 @@ var ROLE_LABELS = {
   accountant:"Accountant — resellers, invoices, quotations, payroll (view)",
   sales:"Sales — invoices, quotations, tasks & weekly report",
   employee:"Employee — tasks, tickets & own payslips",
+  person:"Own page — own money & own tasks (e.g. Jean)",
   reseller:"Reseller portal — own account only"
 };
 // Unknown or missing role = least access (the security rules treat it the same way).
@@ -1060,7 +1062,7 @@ function resolveWorkspace(){
   var emailKey = (STATE.currentUserEmail||"").toLowerCase();
   db.doc("users/"+emailKey).get().then(function(snap){
     var u = snap.exists ? (snap.data()||{}) : null;
-    if (u && u.orgId){ enterOrg(u.orgId, u.role, u.employeeId, u.companies, u.resellerId); return; }
+    if (u && u.orgId){ STATE.myName = String(u.name || "").trim(); enterOrg(u.orgId, u.role, u.employeeId, u.companies, u.resellerId); return; }
     // Signing in isn't enough: without an access record (Team Access) there is nothing to open.
     // (The one-time workspace upgrade that used to run here is finished and has been removed.)
     STATE.gate = "noaccess"; render();
@@ -1137,6 +1139,7 @@ function applyWorkspace(ws){
 
 function startData(){
   if (isResellerUser()){ startResellerData(); return; }
+  if (isPersonUser()){ startPersonData(); return; }
 
   // role lookup for the signed-in user (doc id = lowercased email). No doc found => Admin (safe default for
   // pre-existing accounts). Only an explicit "employee" role doc restricts access.
@@ -1523,7 +1526,7 @@ var AR = {
 "Family allow. paid":"التعويضات المدفوعة","Net due NSSF":"الصافي المستحق للضمان","Contract":"العقد","Costs":"الكلفة","Balance today":"الرصيد اليوم","Still owed (all time)":"المتبقي (كل الفترات)",
 "Collections":"التحصيل","Not due yet":"غير مستحق بعد","0–30 days":"0–30 يومًا","31–60 days":"31–60 يومًا","61–90 days":"61–90 يومًا","90+ days":"أكثر من 90 يومًا","Total owed to you":"إجمالي المستحق لك",
 "Resellers & invoices":"الموزّعون والفواتير","Resellers only":"الموزّعون فقط","Invoices only":"الفواتير فقط","Oldest first":"الأقدم أولًا","Biggest first":"الأكبر أولًا","Search name or phone…":"ابحث بالاسم أو الهاتف…",
-"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","Assigned to you":"مُسند إليك","My tasks":"مهامي","My weekly report":"تقريري الأسبوعي","Hide":"إخفاء","Not assigned":"غير مُسند","Open tasks by person":"المهام المفتوحة حسب الشخص","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
+"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","My page":"صفحتي","By company":"حسب الشركة","Show open only":"المفتوحة فقط","Show done too":"إظهار المنجزة أيضًا","Nothing assigned right now.":"لا شيء مُسند الآن.","Weekly report":"التقرير الأسبوعي","This login has no name yet.":"هذا الحساب بلا اسم بعد.","Ask the admin to add your name in Team Access.":"اطلب من المدير إضافة اسمك في صلاحيات الفريق.","This login has no name — ask the admin to add it in Team Access.":"هذا الحساب بلا اسم — اطلب من المدير إضافته في صلاحيات الفريق.","Own page — own money & own tasks (e.g. Jean)":"صفحة خاصة — أمواله ومهامه فقط (مثل Jean)","Write the person's name (as in \"Assigned to\") for an own-page login.":"اكتب اسم الشخص (كما في «مُسند إلى») لحساب الصفحة الخاصة.","Assigned to you":"مُسند إليك","My tasks":"مهامي","My weekly report":"تقريري الأسبوعي","Hide":"إخفاء","Not assigned":"غير مُسند","Open tasks by person":"المهام المفتوحة حسب الشخص","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
 "never":"أبدًا","today":"اليوم","Invoice":"فاتورة","Reseller":"موزّع",
 "My Account":"حسابي","Reseller portal — own account only":"بوابة الموزّع — حسابه فقط","Account not found":"الحساب غير موجود","Please contact us.":"يرجى التواصل معنا.","Download statement (PDF)":"تنزيل كشف الحساب (PDF)",
 "Amount due":"المبلغ المستحق","Credit balance":"رصيد دائن","My services":"خدماتي","Total per month":"المجموع الشهري","My statement":"كشف حسابي","Support":"الدعم","Report a problem":"الإبلاغ عن مشكلة","Send":"إرسال",
@@ -1640,7 +1643,7 @@ var AR_RULES = [
   [/^Password reset link sent to (.+)\.$/, "تم إرسال رابط إعادة التعيين إلى $1."],
   [/^You were signed out after (\d+) minutes without activity\. Please sign in again\.$/, "تم تسجيل خروجك بعد $1 دقيقة دون نشاط. يرجى تسجيل الدخول مجددًا."],
   [/^Recharges (\d{4})$/, "التعبئات $1"], [/^Payments (\d{4})$/, "الدفعات $1"], [/^Bills (\d{4})$/, "الفواتير $1"], [/^Spent (\d{4})$/, "المصروف $1"], [/^Paid (\d{4})$/, "المدفوع $1"],
-  [/^Send next reminder → (.+)$/, "إرسال التذكير التالي ← $1"], [/^(\d+) new assigned to you$/, "$1 جديد مُسند إليك"], [/^(\d+) open task\(s\) · (\d+) weekly report line\(s\) · (\d+) late$/, "$1 مهمة مفتوحة · $2 سطر في التقرير الأسبوعي · $3 متأخرة"], [/^(\d+) open task\(s\) · (\d+) weekly report line\(s\)$/, "$1 مهمة مفتوحة · $2 سطر في التقرير الأسبوعي"], [/^(\d+) open task\(s\) · (\d+) late$/, "$1 مهمة مفتوحة · $2 متأخرة"], [/^(\d+) open task\(s\)$/, "$1 مهمة مفتوحة"], [/^(\d+) weekly report line\(s\) · (\d+) late$/, "$1 سطر في التقرير الأسبوعي · $2 متأخر"], [/^(\d+) weekly report line\(s\)$/, "$1 سطر في التقرير الأسبوعي"], [/^(.+) · (\d+) \((\d+) late\)$/, "$1 · $2 ($3 متأخرة)"], [/^People you can assign to — (.+)$/, "الأشخاص الذين يمكن الإسناد إليهم — $1"], [/^No people for (.+) yet — an admin adds them with the "People" button\.$/, "لا يوجد أشخاص لـ $1 بعد — يضيفهم المدير عبر زر «الأشخاص»."], [/^(\d+) open line\(s\) assigned to (.+) · (\d+) late$/, "$1 سطر مفتوح مُسند إلى $2 · $3 متأخر"], [/^(\d+) open line\(s\) assigned to (.+)$/, "$1 سطر مفتوح مُسند إلى $2"], [/^Money (.+) received$/, "المال الذي استلمه $1"], [/^Money (.+) paid or spent$/, "المال الذي دفعه أو صرفه $1"], [/^Paid \/ spent by (.+)$/, "دفعه أو صرفه $1"], [/^Received by (.+)$/, "استلمه $1"], [/^Cash (.+) · Whish (.+)$/, "نقدًا $1 · ويش $2"], [/^Still on (.+) = from before \+ received − paid \/ spent\. It carries to the next month\. This page is not linked to resellers, suppliers or expenses\.$/, "الباقي على $1 = من قبل + المستلَم − المدفوع / المصروف، ويُرحَّل إلى الشهر التالي. هذه الصفحة غير مرتبطة بالموزّعين أو المورّدين أو المصاريف."], [/^Still on (.+)$/, "الباقي على $1"], [/^(\d+) sent today · (\d+) left$/, "$1 أُرسل اليوم · $2 متبقٍّ"], [/^(\d+) without a phone number$/, "$1 بدون رقم هاتف"], [/^Bring back skipped \((\d+)\)$/, "إعادة المتخطَّين ($1)"], [/^due in (\d+)d$/, "يستحق بعد $1 يوم"], [/^(\d+)d$/, "$1 يوم"],
+  [/^Send next reminder → (.+)$/, "إرسال التذكير التالي ← $1"], [/^Tasks assigned to (.+)$/, "المهام المُسندة إلى $1"], [/^Hello (.+)$/, "مرحبًا $1"], [/^(\d+) open · (\d+) late$/, "$1 مفتوحة · $2 متأخرة"], [/^Name \(as in "Assigned to"\)$/, "الاسم (كما في «مُسند إلى»)"], [/^e\.g\. Jean — needed for "Own page"$/, "مثلًا Jean — مطلوب لـ«الصفحة الخاصة»"], [/^(\d+) new assigned to you$/, "$1 جديد مُسند إليك"], [/^(\d+) open task\(s\) · (\d+) weekly report line\(s\) · (\d+) late$/, "$1 مهمة مفتوحة · $2 سطر في التقرير الأسبوعي · $3 متأخرة"], [/^(\d+) open task\(s\) · (\d+) weekly report line\(s\)$/, "$1 مهمة مفتوحة · $2 سطر في التقرير الأسبوعي"], [/^(\d+) open task\(s\) · (\d+) late$/, "$1 مهمة مفتوحة · $2 متأخرة"], [/^(\d+) open task\(s\)$/, "$1 مهمة مفتوحة"], [/^(\d+) weekly report line\(s\) · (\d+) late$/, "$1 سطر في التقرير الأسبوعي · $2 متأخر"], [/^(\d+) weekly report line\(s\)$/, "$1 سطر في التقرير الأسبوعي"], [/^(.+) · (\d+) \((\d+) late\)$/, "$1 · $2 ($3 متأخرة)"], [/^People you can assign to — (.+)$/, "الأشخاص الذين يمكن الإسناد إليهم — $1"], [/^No people for (.+) yet — an admin adds them with the "People" button\.$/, "لا يوجد أشخاص لـ $1 بعد — يضيفهم المدير عبر زر «الأشخاص»."], [/^(\d+) open line\(s\) assigned to (.+) · (\d+) late$/, "$1 سطر مفتوح مُسند إلى $2 · $3 متأخر"], [/^(\d+) open line\(s\) assigned to (.+)$/, "$1 سطر مفتوح مُسند إلى $2"], [/^Money (.+) received$/, "المال الذي استلمه $1"], [/^Money (.+) paid or spent$/, "المال الذي دفعه أو صرفه $1"], [/^Paid \/ spent by (.+)$/, "دفعه أو صرفه $1"], [/^Received by (.+)$/, "استلمه $1"], [/^Cash (.+) · Whish (.+)$/, "نقدًا $1 · ويش $2"], [/^Still on (.+) = from before \+ received − paid \/ spent\. It carries to the next month\. This page is not linked to resellers, suppliers or expenses\.$/, "الباقي على $1 = من قبل + المستلَم − المدفوع / المصروف، ويُرحَّل إلى الشهر التالي. هذه الصفحة غير مرتبطة بالموزّعين أو المورّدين أو المصاريف."], [/^Still on (.+)$/, "الباقي على $1"], [/^(\d+) sent today · (\d+) left$/, "$1 أُرسل اليوم · $2 متبقٍّ"], [/^(\d+) without a phone number$/, "$1 بدون رقم هاتف"], [/^Bring back skipped \((\d+)\)$/, "إعادة المتخطَّين ($1)"], [/^due in (\d+)d$/, "يستحق بعد $1 يوم"], [/^(\d+)d$/, "$1 يوم"],
   [/^(\d+) debt\(s\) older than 60 days$/, "$1 دين أقدم من 60 يومًا"],
   [/^Welcome, (.+)$/, "أهلًا، $1"], [/^Login created for (.+)\.$/, "تم إنشاء حساب الدخول لـ $1."],
   [/^Received (.+)$/, "المستلم $1"], [/^Still expected: (\d+)(.*)$/, "متبقٍ: $1"],
@@ -1859,6 +1862,7 @@ function renderTopBar(){
     {id:"reports", label:"Reports"},
     {id:"resellers", label:"Resellers"},
     {id:"transactions", label:"Transactions"},
+    {id:"mypage", label:"My page", personOnly:true},
     {id:"jean", label:"Jean"},
     {id:"invoices", label:"Invoices"},
     {id:"employees", label:"Employees"},
@@ -1879,7 +1883,7 @@ function renderTopBar(){
   ];
   if (STATE.gate){ modules = []; switchEl.innerHTML = ""; }
   if (!isOwnerUser()){ modules = modules.filter(function(m){ return !m.ownerOnly; }); }
-  modules = modules.filter(function(m){ return moduleAllowed(m.id) && (!m.selfService || STATE.myEmployeeId) && !(m.id === "business-settings" && isRestricted()); });
+  modules = modules.filter(function(m){ return moduleAllowed(m.id) && (!m.selfService || STATE.myEmployeeId) && !(m.id === "business-settings" && isRestricted()) && (!m.personOnly || isPersonUser()); });
   modules.forEach(function(m){
     var cls = "module-tab" + (m.id===STATE.module?" active":"") + (m.soon?" soon":"");
     var children = [m.label];
@@ -5674,7 +5678,8 @@ function buildTeamAccessView(){
   STATE.employees.forEach(function(emp){ linkSelect.appendChild(el("option",{value:emp.id},[employeeFullName(emp) + (emp.company ? " — " + emp.company : "")])); });
   linkField.appendChild(linkSelect);
   var passField = el("div",{class:"field"},[el("label",{},["Password (to create their login)"]), el("input",{type:"text", id:"ta-pass", placeholder:"At least 10 characters, letters and numbers — leave empty if they already have a login"})]);
-  grid.appendChild(emailField); grid.appendChild(roleField); grid.appendChild(coField); grid.appendChild(linkField); grid.appendChild(passField);
+  var nameField = el("div",{class:"field"},[el("label",{},["Name (as in \"Assigned to\")"]), el("input",{type:"text", id:"ta-name", dir:"auto", placeholder:"e.g. Jean — needed for \"Own page\""})]);
+  grid.appendChild(emailField); grid.appendChild(nameField); grid.appendChild(roleField); grid.appendChild(coField); grid.appendChild(linkField); grid.appendChild(passField);
   formPanel.appendChild(grid);
   formPanel.appendChild(el("div",{class:"form-actions"},[
     el("button",{class:"btn", onclick:function(){
@@ -5684,6 +5689,8 @@ function buildTeamAccessView(){
       var pass = document.getElementById("ta-pass").value;
       if (pass && passwordProblem(pass)){ toast(passwordProblem(pass)); return; }
       var role = document.getElementById("ta-role").value;
+      var taName = (document.getElementById("ta-name").value || "").trim();
+      if (role === "person" && !taName){ toast("Write the person's name (as in \"Assigned to\") for an own-page login."); return; }
       var allBox = document.getElementById("ta-co-all");
       var companies = (allBox && allBox.checked) ? [] : COMPANIES.filter(function(c, i){ var b = document.getElementById("ta-co-" + i); return b && b.checked; });
       if (!(allBox && allBox.checked) && !companies.length){ toast("Choose at least one company."); return; }
@@ -5694,10 +5701,12 @@ function buildTeamAccessView(){
         if (isRestricted() && snap.exists && snap.data() && !(Array.isArray(snap.data().companies) && snap.data().companies.length && snap.data().companies.every(function(c){ return STATE.myCompanies.indexOf(c) !== -1; }))){
           throw {code:"other-company"};
         }
-        return db.doc("users/"+email).set({orgId:ORG, role:role, companies:companies, employeeId:document.getElementById("ta-emp").value, updatedAt:new Date().toISOString()}, {merge:true});
+        var udoc = {orgId:ORG, role:role, companies:companies, employeeId:document.getElementById("ta-emp").value, updatedAt:new Date().toISOString()};
+        if (taName) udoc.name = taName;
+        return db.doc("users/"+email).set(udoc, {merge:true});
       }).then(function(){ return createLogin(email, pass); }).then(function(res){
         toast(res === "created" ? "Access saved and login created." : (res === "exists" ? "Access saved (they already had a login)." : "Access level saved."));
-        document.getElementById("ta-email").value = ""; document.getElementById("ta-pass").value = "";
+        document.getElementById("ta-email").value = ""; document.getElementById("ta-pass").value = ""; document.getElementById("ta-name").value = "";
       }).catch(function(err){
         if (err && (err.code === "other-org" || err.code === "permission-denied")) toast("This email already belongs to another workspace.");
         else if (err && err.code === "other-company") toast("This person has access to other companies — only an all-companies admin can change them.");
@@ -5717,16 +5726,17 @@ function buildTeamAccessView(){
 
   var tableWrap = el("div",{class:"table-wrap", style:"margin-top:16px;"});
   var table = el("table");
-  table.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Email"]), el("th",{},["Role"]), el("th",{},["Companies"]), el("th",{},["Linked employee"]), el("th",{class:"del-cell"},[""])])]));
+  table.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Email"]), el("th",{},["Name"]), el("th",{},["Role"]), el("th",{},["Companies"]), el("th",{},["Linked employee"]), el("th",{class:"del-cell"},[""])])]));
   var tbody = el("tbody");
   if (!STATE.teamAccess.length){
-    tbody.appendChild(el("tr",{},[el("td",{colspan:"5", style:"color:var(--ink-faint);"},["No one added yet."])]));
+    tbody.appendChild(el("tr",{},[el("td",{colspan:"6", style:"color:var(--ink-faint);"},["No one added yet."])]));
   }
   STATE.teamAccess.filter(function(u){
     return !isRestricted() || (Array.isArray(u.companies) && u.companies.length && u.companies.every(function(c){ return STATE.myCompanies.indexOf(c) !== -1; }));
   }).forEach(function(u){
     tbody.appendChild(el("tr",{},[
       el("td",{},[u.id]),
+      el("td",{},[u.name || "—"]),
       el("td",{},[ROLE_LABELS[normRole(u.role)]]),
       el("td",{},[Array.isArray(u.companies) && u.companies.length ? u.companies.join(", ") : "All companies"]),
       el("td",{},[(function(){ var emp = STATE.employees.filter(function(x){ return x.id === u.employeeId; })[0]; return emp ? employeeFullName(emp) : "—"; })()]),
@@ -8179,6 +8189,7 @@ function buildDashboardView(){
   loadDashboard();
   var coBar = el("div",{class:"company-switch"});
   if (COMPANIES.length === 1) STATE.dashCompany = COMPANIES[0];
+  else if (STATE.dashCoFor !== STATE.company){ STATE.dashCompany = STATE.company; STATE.dashCoFor = STATE.company; }   // open on the company chosen at the top
   else if (STATE.dashCompany !== "all" && COMPANIES.indexOf(STATE.dashCompany) === -1) STATE.dashCompany = "all";
   (COMPANIES.length > 1 ? [["all","All companies"]] : []).concat(COMPANIES.map(function(c){ return [c, c]; })).forEach(function(o){
     coBar.appendChild(el("button",{class:STATE.dashCompany === o[0] ? "active" : "", onclick:function(){ STATE.dashCompany = o[0]; render(); }},[o[1]]));
@@ -9491,13 +9502,44 @@ function buildCollectionsView(){
 }
 
 
+
+/* ---- "Own page" login (role person): only their own money lines, tasks and weekly lines, in every company ---- */
+function isPersonUser(){ return roleOf() === "person"; }
+function startPersonData(){
+  var emailKey = (STATE.currentUserEmail || "").toLowerCase(), name = STATE.myName || "";
+  STATE.module = "mypage";
+  unsubUserRole = db.doc("users/" + emailKey).onSnapshot(function(snap){
+    var u = snap.exists ? snap.data() : null;
+    if (!u || u.orgId !== ORG || u.role !== "person" || String(u.name || "").trim() !== name){ teardownSubscriptions(); STATE.gate = "noaccess"; render(); return; }
+    STATE.roleLoaded = true;
+  }, function(){});
+  unsubWorkspace = cfgDoc("workspace").onSnapshot(function(snap){ if (snap.exists && snap.data()) applyWorkspace(snap.data()); else render(); }, function(){});
+  unsubSecurity = cfgDoc("security").onSnapshot(function(snap){ STATE.security = (snap.exists && snap.data()) || null; }, function(){});
+  if (!name){ STATE.jeanLoaded = true; STATE.schedulesLoaded = true; STATE.wrLoaded = true; render(); return; }
+  var q = function(col){ return db.collection(col).where("orgId","==",ORG); };
+  unsubJean = q("collectorMoves").where("person","==",name).onSnapshot(function(qs){
+    STATE.jeanMoves = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    STATE.jeanLoaded = true; STATE.jeanError = false; render();
+  }, function(){ STATE.jeanMoves = []; STATE.jeanLoaded = true; STATE.jeanError = true; render(); });
+  unsubSchedules = q("schedules").where("responsible","==",name).onSnapshot(function(qs){
+    STATE.schedules = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    STATE.schedulesLoaded = true; render();
+  }, function(){ STATE.schedules = []; STATE.schedulesLoaded = true; render(); });
+  unsubWeekly = q("weeklyReports").where("assignedTo","==",name).onSnapshot(function(qs){
+    STATE.weekly = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    STATE.wrLoaded = true; render();
+  }, function(){ STATE.weekly = []; STATE.wrLoaded = true; render(); });
+}
 /* ============================== JEAN'S ACCOUNT ==============================
-   A simple money page for one person (Jean), not linked to resellers, suppliers or expenses:
-   what he received (and from whom), what he paid or spent (and to whom / for what),
-   and what is still on him — month by month, carried forward, Cash and Whish shown apart.
-   Saved in "collectorMoves" with person = "Jean", dir = "in" | "out". */
+   A money page for one person (Jean), in every company at once, not linked to resellers, suppliers or expenses:
+   what he received (and from whom), what he paid or spent (and to whom / for what), and what is still on him —
+   month by month, carried forward, Cash and Whish shown apart, with a line per company. Below it: the tasks and
+   weekly-report lines assigned to him (all companies), whose status he can change.
+   Admins see it in the "Jean" tab; Jean himself sees it as "My page" with an own-page login (role person).
+   Saved in "collectorMoves" with person = the name, dir = "in" | "out", company = the company. */
 var JEAN = "Jean";
 var unsubJean = null;
+function jeanName(){ return isPersonUser() ? (STATE.myName || "") : JEAN; }
 function watchJean(){
   if (unsubJean || !ORG || !db || !hasFinance()) return;
   STATE.jeanLoaded = false;
@@ -9511,61 +9553,76 @@ function watchJean(){
 function stopJean(){ if (unsubJean){ try{ unsubJean(); }catch(e){} unsubJean = null; } STATE.jeanMoves = []; STATE.jeanLoaded = false; }
 function jRound(n){ return Math.round((Number(n) || 0) * 100) / 100; }
 function jSum(o){ return jRound(o.cash + o.wish); }
+function jCo(m){ return m.company || "Libancom"; }
 
 function jeanStatement(month){
   var z = function(){ return {cash:0, wish:0}; };
-  var st = {open:z(), inn:z(), out:z(), close:z(), ins:[], outs:[]};
+  var blank = function(){ return {open:z(), inn:z(), out:z(), close:z()}; };
+  var st = Object.assign(blank(), {ins:[], outs:[], byCo:{}});
   (STATE.jeanMoves || []).slice().sort(function(a,b){ return (a.date||"") < (b.date||"") ? -1 : ((a.date||"") > (b.date||"") ? 1 : 0); }).forEach(function(m){
     var k = m.method === "wish" ? "wish" : "cash", a = Number(m.amount) || 0, mo = (m.date || "").slice(0,7), isIn = m.dir === "in";
-    if (mo < month) st.open[k] += isIn ? a : -a;
-    else if (mo === month){ st[isIn ? "inn" : "out"][k] += a; st[isIn ? "ins" : "outs"].push(m); }
+    var c = st.byCo[jCo(m)] = st.byCo[jCo(m)] || blank();
+    [st, c].forEach(function(t){
+      if (mo < month) t.open[k] += isIn ? a : -a;
+      else if (mo === month) t[isIn ? "inn" : "out"][k] += a;
+    });
+    if (mo === month) st[isIn ? "ins" : "outs"].push(m);
   });
-  ["cash","wish"].forEach(function(k){
-    st.open[k] = jRound(st.open[k]); st.inn[k] = jRound(st.inn[k]); st.out[k] = jRound(st.out[k]);
-    st.close[k] = jRound(st.open[k] + st.inn[k] - st.out[k]);
+  [st].concat(Object.keys(st.byCo).map(function(k){ return st.byCo[k]; })).forEach(function(t){
+    ["cash","wish"].forEach(function(k){
+      t.open[k] = jRound(t.open[k]); t.inn[k] = jRound(t.inn[k]); t.out[k] = jRound(t.out[k]);
+      t.close[k] = jRound(t.open[k] + t.inn[k] - t.out[k]);
+    });
   });
   return st;
 }
 
 function jeanExport(month, st){
   if (!window.XLSX){ toast("Excel tools are still loading — try again in a moment."); return; }
-  var aoa = [[JEAN + " — " + sheetMonthLabel(month)], [], ["", "Cash", "Whish", "Total"],
+  var who = jeanName();
+  var aoa = [[who + " — " + sheetMonthLabel(month)], [], ["", "Cash", "Whish", "Total"],
     ["From before", st.open.cash, st.open.wish, jSum(st.open)],
     ["Received", st.inn.cash, st.inn.wish, jSum(st.inn)],
     ["Paid / spent", st.out.cash, st.out.wish, jSum(st.out)],
-    ["Still on " + JEAN, st.close.cash, st.close.wish, jSum(st.close)], [],
-    ["Received"], ["Date", "From", "Cash", "Whish", "Note"]];
-  st.ins.forEach(function(m){ aoa.push([m.date, m.party || "", m.method === "wish" ? "" : Number(m.amount) || 0, m.method === "wish" ? Number(m.amount) || 0 : "", m.note || ""]); });
-  aoa.push([], ["Paid / spent"], ["Date", "To / for", "Cash", "Whish", "Note"]);
-  st.outs.forEach(function(m){ aoa.push([m.date, m.party || "", m.method === "wish" ? "" : Number(m.amount) || 0, m.method === "wish" ? Number(m.amount) || 0 : "", m.note || ""]); });
+    ["Still on " + who, st.close.cash, st.close.wish, jSum(st.close)], [],
+    ["Company", "From before", "Received", "Paid / spent", "Still on " + who]];
+  Object.keys(st.byCo).sort().forEach(function(c){ var t = st.byCo[c]; aoa.push([c, jSum(t.open), jSum(t.inn), jSum(t.out), jSum(t.close)]); });
+  aoa.push([], ["Received"], ["Date", "Company", "From", "Cash", "Whish", "Note"]);
+  st.ins.forEach(function(m){ aoa.push([m.date, jCo(m), m.party || "", m.method === "wish" ? "" : Number(m.amount) || 0, m.method === "wish" ? Number(m.amount) || 0 : "", m.note || ""]); });
+  aoa.push([], ["Paid / spent"], ["Date", "Company", "To / for", "Cash", "Whish", "Note"]);
+  st.outs.forEach(function(m){ aoa.push([m.date, jCo(m), m.party || "", m.method === "wish" ? "" : Number(m.amount) || 0, m.method === "wish" ? Number(m.amount) || 0 : "", m.note || ""]); });
   var wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws["!cols"] = [{wch:20}, {wch:28}, {wch:12}, {wch:12}, {wch:30}];
-  XLSX.utils.book_append_sheet(wb, ws, JEAN);
-  XLSX.writeFile(wb, "jean-" + month + ".xlsx");
+  ws["!cols"] = [{wch:20}, {wch:14}, {wch:28}, {wch:12}, {wch:12}, {wch:30}];
+  XLSX.utils.book_append_sheet(wb, ws, who.slice(0,30) || "Account");
+  XLSX.writeFile(wb, slugify(who || "account") + "-" + month + ".xlsx");
 }
 
 function buildJeanForm(){
-  var F = STATE.jeanForm, isIn = F.dir === "in";
+  var F = STATE.jeanForm, isIn = F.dir === "in", who = jeanName();
+  if (!F.company) F.company = COMPANIES.indexOf(STATE.company) !== -1 ? STATE.company : COMPANIES[0];
   var p = el("div",{class:"panel", style:"margin-bottom:16px;"});
-  p.appendChild(el("h2",{},[isIn ? "Money " + JEAN + " received" : "Money " + JEAN + " paid or spent"]));
+  p.appendChild(el("h2",{},[isIn ? "Money " + who + " received" : "Money " + who + " paid or spent"]));
   p.appendChild(el("div",{class:"form-grid"},[
     el("div",{class:"field"},[el("label",{},[isIn ? "From whom *" : "To whom / for what *"]),
       el("input",{type:"text", dir:"auto", value:F.party || "", placeholder:isIn ? "e.g. Office, a customer" : "e.g. Energy, fuel, technician", oninput:function(e){ F.party = e.target.value; }})]),
     el("div",{class:"field"},[el("label",{},["Amount (USD) *"]), el("input",{type:"number", step:"0.01", min:"0", placeholder:"0.00", value:F.amount || "", oninput:function(e){ F.amount = e.target.value; }})]),
     el("div",{class:"field"},[el("label",{},["Cash or Whish"]), el("select",{onchange:function(e){ F.method = e.target.value; }},[["cash","Cash"],["wish","Whish"]].map(function(o){
       return el("option",{value:o[0], selected:(F.method || "cash") === o[0] ? "selected" : null},[o[1]]); }))]),
+    el("div",{class:"field"},[el("label",{},["Company"]), el("select",{onchange:function(e){ F.company = e.target.value; }},COMPANIES.map(function(c){
+      return el("option",{value:c, selected:F.company === c ? "selected" : null},[c]); }))]),
     el("div",{class:"field"},[el("label",{},["Date"]), el("input",{type:"date", value:F.date || localToday(), onchange:function(e){ F.date = e.target.value; }})]),
     el("div",{class:"field"},[el("label",{},["Note"]), el("input",{type:"text", dir:"auto", placeholder:"Optional", value:F.note || "", oninput:function(e){ F.note = e.target.value; }})])
   ]));
   p.appendChild(el("div",{class:"form-actions"},[
     el("button",{class:"btn ghost", onclick:function(){ STATE.jeanForm = null; render(); }},["Cancel"]),
     el("button",{class:"btn", onclick:function(){
-      var v = jRound(F.amount), who = (F.party || "").trim(), d = F.date || localToday();
-      if (!who){ toast(isIn ? "Write who gave him the money." : "Write who he paid or what it was for."); return; }
+      var v = jRound(F.amount), party = (F.party || "").trim(), d = F.date || localToday();
+      if (!party){ toast(isIn ? "Write who gave him the money." : "Write who he paid or what it was for."); return; }
       if (!(v > 0)){ toast("Enter an amount greater than 0."); return; }
+      if (!who){ toast("This login has no name — ask the admin to add it in Team Access."); return; }
       if (!db){ toast("Live sync unavailable — can't save right now."); return; }
-      db.collection("collectorMoves").add(withOrg({person:JEAN, dir:isIn ? "in" : "out", party:who, amount:v, method:F.method || "cash", date:d,
-        note:(F.note || "").trim(), company:STATE.company, createdBy:STATE.currentUserEmail || "", createdAt:new Date().toISOString()}))
+      db.collection("collectorMoves").add(withOrg({person:who, dir:isIn ? "in" : "out", party:party, amount:v, method:F.method || "cash", date:d,
+        note:(F.note || "").trim(), company:F.company, createdBy:STATE.currentUserEmail || "", createdAt:new Date().toISOString()}))
         .then(function(){ toast("Saved."); STATE.jeanForm = null; STATE.jeanMonth = d.slice(0,7); render(); })
         .catch(function(err){ toast(/permission|insufficient/i.test(String(err && (err.code || err.message))) ? "Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added." : "Couldn't save — try again."); });
     }},["Save"])
@@ -9575,11 +9632,12 @@ function buildJeanForm(){
 
 function jeanTable(list, isIn){
   var t = el("table",{class:"bw-table", style:"min-width:0;"}), b = el("tbody"), tc = 0, tw = 0;
-  t.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Date"]), el("th",{},[isIn ? "From" : "To / for"]), el("th",{class:"num"},["Cash"]), el("th",{class:"num"},["Whish"]), el("th",{},[""])])]));
+  t.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Date"]), el("th",{},["Company"]), el("th",{},[isIn ? "From" : "To / for"]), el("th",{class:"num"},["Cash"]), el("th",{class:"num"},["Whish"]), el("th",{},[""])])]));
   list.forEach(function(m){
     var a = Number(m.amount) || 0, w = m.method === "wish"; if (w) tw += a; else tc += a;
     b.appendChild(el("tr",{},[
       el("td",{class:"mono"},[m.date || ""]),
+      el("td",{},[jCo(m)]),
       el("td",{},[el("div",{style:"font-weight:700;"},[el("bdi",{},[m.party || "—"])]), m.note ? el("div",{style:"font-size:11.5px; color:var(--ink-faint);"},[el("bdi",{},[m.note])]) : null]),
       el("td",{class:"num mono"},[w ? "" : money(a)]), el("td",{class:"num mono"},[w ? money(a) : ""]),
       el("td",{},[el("button",{class:"icon-btn", title:"Remove", onclick:function(){
@@ -9589,17 +9647,78 @@ function jeanTable(list, isIn){
       }},["✕"])])
     ]));
   });
-  b.appendChild(el("tr",{style:"font-weight:800; background:var(--paper);"},[el("td",{},["Total"]), el("td",{}),
+  b.appendChild(el("tr",{style:"font-weight:800; background:var(--paper);"},[el("td",{},["Total"]), el("td",{}), el("td",{}),
     el("td",{class:"num mono"},[money(tc)]), el("td",{class:"num mono"},[money(tw)]), el("td",{})]));
   t.appendChild(b);
   return el("div",{class:"table-wrap"},[t]);
 }
 
+// tasks + weekly-report lines assigned to the person, every company, open first; status can be changed here
+function buildJeanWork(who){
+  var p = el("div",{class:"panel"});
+  p.appendChild(el("h2",{},["Tasks assigned to " + who]));
+  var open = function(st){ return st === "Pending" || st === "In Progress"; };
+  var tasks = (STATE.schedules || []).filter(function(t){ return t.responsible === who; })
+    .sort(function(a,b){ var oa = open(a.status || "Pending") ? 0 : 1, ob = open(b.status || "Pending") ? 0 : 1; return oa - ob || (a.plannedDueDate || "9").localeCompare(b.plannedDueDate || "9"); });
+  var showAll = !!STATE.jeanAllTasks, today = todayISO();
+  var shown = showAll ? tasks : tasks.filter(function(t){ return open(t.status || "Pending"); });
+  var lines = (STATE.weekly || []).filter(function(r){ return r.assignedTo === who && (showAll || (r.status || "ongoing") === "ongoing"); });
+  p.appendChild(el("div",{style:"display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap;"},[
+    el("span",{style:"font-size:13px; color:var(--ink-soft);"},[tasks.filter(function(t){ return open(t.status || "Pending"); }).length + " open · " +
+      tasks.filter(function(t){ return open(t.status || "Pending") && t.plannedDueDate && t.plannedDueDate < today; }).length + " late"]),
+    el("button",{class:"btn ghost small", onclick:function(){ STATE.jeanAllTasks = !showAll; render(); }},[showAll ? "Show open only" : "Show done too"])
+  ]));
+  if (!shown.length && !lines.length){ p.appendChild(el("div",{style:"color:var(--ink-faint);"},["Nothing assigned right now."])); return p; }
+  if (shown.length){
+    var t = el("table",{class:"bw-table", style:"min-width:0;"}), b = el("tbody");
+    t.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Planned"]), el("th",{},["Company"]), el("th",{},["Task"]), el("th",{},["Site / Client"]), el("th",{},["Notes"]), el("th",{},["Status"])])]));
+    shown.forEach(function(x){
+      var st = x.status || "Pending", late = open(st) && x.plannedDueDate && x.plannedDueDate < today;
+      b.appendChild(el("tr",{},[
+        el("td",{class:"mono", style:late ? "color:var(--bad); font-weight:800;" : ""},[x.plannedDueDate || "—"]),
+        el("td",{},[x.company || "Libancom"]),
+        el("td",{style:"font-weight:700;"},[x.taskType || ""]),
+        el("td",{},[el("bdi",{},[x.siteClient || ""])]),
+        el("td",{style:"font-size:12.5px; color:var(--ink-soft); white-space:pre-wrap;"},[el("bdi",{},[x.notes || ""])]),
+        el("td",{},[el("select",{onchange:function(e){
+          db.doc("schedules/" + x.id).update({status:e.target.value, updatedAt:new Date().toISOString()}).then(function(){ toast("Saved."); }).catch(function(){ toast("Couldn't save — try again."); });
+        }}, TASK_STATUSES.map(function(s){ return el("option",{value:s, selected:st === s ? "selected" : null},[s]); }))])
+      ]));
+    });
+    t.appendChild(b); p.appendChild(el("div",{class:"table-wrap"},[t]));
+  }
+  if (lines.length){
+    p.appendChild(el("h3",{style:"margin:16px 0 8px; font-size:14px;"},["Weekly report"]));
+    var t2 = el("table",{class:"bw-table", style:"min-width:0;"}), b2 = el("tbody");
+    t2.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Planned"]), el("th",{},["Company"]), el("th",{},["Customer / task"]), el("th",{},["Action to be done"]), el("th",{},["Status"])])]));
+    lines.forEach(function(r){
+      var s = r.status || "ongoing";
+      b2.appendChild(el("tr",{},[
+        el("td",{class:"mono", style:wrLate(r) ? "color:var(--bad); font-weight:800;" : ""},[r.plannedDate || "—"]),
+        el("td",{},[r.company || "Libancom"]),
+        el("td",{style:"font-weight:700;"},[el("bdi",{},[r.subject || ""])]),
+        el("td",{style:"white-space:pre-wrap;"},[el("bdi",{},[r.todo || ""])]),
+        el("td",{},[el("select",{onchange:function(e){
+          db.doc("weeklyReports/" + r.id).update({status:e.target.value, updatedAt:new Date().toISOString(), updatedBy:STATE.currentUserEmail || ""}).then(function(){ toast("Saved."); }).catch(function(){ toast("Couldn't save — try again."); });
+        }}, WR_STATUSES.map(function(x){ return el("option",{value:x[0], selected:s === x[0] ? "selected" : null},[x[1]]); }))])
+      ]));
+    });
+    t2.appendChild(b2); p.appendChild(el("div",{class:"table-wrap"},[t2]));
+  }
+  return p;
+}
+
 function buildJeanView(){
   var wrap = document.createElement("div");
-  watchJean();
+  var who = jeanName();
+  if (!isPersonUser()){ watchJean(); watchWeekly(); }
+  if (isPersonUser() && !who){
+    wrap.appendChild(el("div",{class:"empty-state"},[el("h3",{},["This login has no name yet."]), el("div",{},["Ask the admin to add your name in Team Access."])]));
+    return wrap;
+  }
   if (!STATE.jeanLoaded){ wrap.appendChild(el("div",{},["Loading…"])); return wrap; }
   var month = STATE.jeanMonth = STATE.jeanMonth || localToday().slice(0,7), st = jeanStatement(month);
+  if (isPersonUser()) wrap.appendChild(el("h2",{style:"margin:0 0 12px;"},["Hello " + who]));
   wrap.appendChild(el("div",{class:"toolbar"},[
     el("div",{style:"display:flex; align-items:center; gap:4px;"},[
       el("button",{class:"btn ghost small", title:"Previous month", onclick:function(){ STATE.jeanMonth = supMonthAdd(month, -1); render(); }},["◀"]),
@@ -9619,20 +9738,36 @@ function buildJeanView(){
       el("div",{style:"font-size:12px; color:var(--ink-soft); margin-top:4px;"},["Cash " + money(o.cash) + " · Whish " + money(o.wish)])]);
   };
   wrap.appendChild(el("div",{class:"summary-row"},[
-    stat("From before", st.open), stat("Received", st.inn), stat("Paid / spent", st.out), stat("Still on " + JEAN, st.close, jSum(st.close) > 0.005)
+    stat("From before", st.open), stat("Received", st.inn), stat("Paid / spent", st.out), stat("Still on " + who, st.close, jSum(st.close) > 0.005)
   ]));
 
+  var cos = Object.keys(st.byCo).sort();
+  if (cos.length){
+    var cp = el("div",{class:"panel"});
+    cp.appendChild(el("h2",{},["By company"]));
+    var ct = el("table",{class:"bw-table", style:"min-width:0;"}), cb = el("tbody");
+    ct.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Company"]), el("th",{class:"num"},["From before"]), el("th",{class:"num"},["Received"]), el("th",{class:"num"},["Paid / spent"]), el("th",{class:"num"},["Still on " + who])])]));
+    cos.forEach(function(c){ var x = st.byCo[c]; cb.appendChild(el("tr",{},[el("td",{style:"font-weight:700;"},[c]),
+      el("td",{class:"num mono"},[money(jSum(x.open))]), el("td",{class:"num mono"},[money(jSum(x.inn))]), el("td",{class:"num mono"},[money(jSum(x.out))]),
+      el("td",{class:"num mono", style:"font-weight:800;"},[money(jSum(x.close))])])); });
+    cb.appendChild(el("tr",{style:"font-weight:800; background:var(--paper);"},[el("td",{},["Total"]),
+      el("td",{class:"num mono"},[money(jSum(st.open))]), el("td",{class:"num mono"},[money(jSum(st.inn))]), el("td",{class:"num mono"},[money(jSum(st.out))]), el("td",{class:"num mono"},[money(jSum(st.close))])]));
+    ct.appendChild(cb); cp.appendChild(el("div",{class:"table-wrap"},[ct])); wrap.appendChild(cp);
+  }
+
   var outP = el("div",{class:"panel"});
-  outP.appendChild(el("h2",{},["Paid / spent by " + JEAN]));
+  outP.appendChild(el("h2",{},["Paid / spent by " + who]));
   outP.appendChild(st.outs.length ? jeanTable(st.outs, false) : el("div",{style:"color:var(--ink-faint);"},["Nothing paid or spent this month."]));
   wrap.appendChild(outP);
 
   var inP = el("div",{class:"panel"});
-  inP.appendChild(el("h2",{},["Received by " + JEAN]));
+  inP.appendChild(el("h2",{},["Received by " + who]));
   inP.appendChild(st.ins.length ? jeanTable(st.ins, true) : el("div",{style:"color:var(--ink-faint);"},["Nothing received this month."]));
   wrap.appendChild(inP);
 
-  wrap.appendChild(el("div",{style:"font-size:12.5px; color:var(--ink-faint);"},["Still on " + JEAN + " = from before + received − paid / spent. It carries to the next month. This page is not linked to resellers, suppliers or expenses."]));
+  wrap.appendChild(buildJeanWork(who));
+
+  wrap.appendChild(el("div",{style:"font-size:12.5px; color:var(--ink-faint);"},["Still on " + who + " = from before + received − paid / spent. It carries to the next month. This page is not linked to resellers, suppliers or expenses."]));
   return wrap;
 }
 
@@ -10034,6 +10169,7 @@ function buildReportsView(){
   if (STATE.repKind === "payroll" || STATE.repKind === "nssf") ensureReportPayslips(STATE.repYear);
   var coBar = el("div",{class:"company-switch"});
   if (COMPANIES.length === 1) STATE.dashCompany = COMPANIES[0];
+  else if (STATE.dashCoFor !== STATE.company){ STATE.dashCompany = STATE.company; STATE.dashCoFor = STATE.company; }   // open on the company chosen at the top
   (COMPANIES.length > 1 ? [["all","All companies"]] : []).concat(COMPANIES.map(function(c){ return [c, c]; })).forEach(function(o){
     coBar.appendChild(el("button",{class:STATE.dashCompany === o[0] ? "active" : "", onclick:function(){ STATE.dashCompany = o[0]; render(); }},[o[1]]));
   });
@@ -10269,6 +10405,11 @@ function render(){
 
   if (STATE.module === "weekly" && hasSales()){
     main.appendChild(buildWeeklyView());
+    return;
+  }
+
+  if (STATE.module === "mypage" && isPersonUser()){
+    main.appendChild(buildJeanView(STATE.myName));
     return;
   }
 
