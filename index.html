@@ -592,6 +592,7 @@ var TASK_TYPES_BY_CO = {
 };
 function taskTypesFor(co){ return TASK_TYPES_BY_CO[co] || TASK_TYPES; }
 var TASK_STATUSES = ["Pending", "In Progress", "Done", "Cancelled"];
+function taskStatusLabel(s){ return s === "Done" ? "Closed" : s; }
 var INVENTORY_TYPES = ["Router", "Switch", "Link", "Antenna", "ONU / Modem", "Access Point", "Radio", "Cable", "UPS", "Other"];
 var INVENTORY_STATUSES = ["In Stock", "Assigned", "Faulty"];
 var TICKET_CATEGORIES = ["Connectivity", "Billing", "Equipment", "Installation", "Other"];
@@ -1531,7 +1532,7 @@ var AR = {
 "Family allow. paid":"التعويضات المدفوعة","Net due NSSF":"الصافي المستحق للضمان","Contract":"العقد","Costs":"الكلفة","Balance today":"الرصيد اليوم","Still owed (all time)":"المتبقي (كل الفترات)",
 "Collections":"التحصيل","Not due yet":"غير مستحق بعد","0–30 days":"0–30 يومًا","31–60 days":"31–60 يومًا","61–90 days":"61–90 يومًا","90+ days":"أكثر من 90 يومًا","Total owed to you":"إجمالي المستحق لك",
 "Resellers & invoices":"الموزّعون والفواتير","Resellers only":"الموزّعون فقط","Invoices only":"الفواتير فقط","Oldest first":"الأقدم أولًا","Biggest first":"الأكبر أولًا","Search name or phone…":"ابحث بالاسم أو الهاتف…",
-"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","Follow up with a candidate":"متابعة مع مرشّح","Meeting with a store":"اجتماع مع متجر","Call a customer":"الاتصال بزبون","Install software":"تثبيت برنامج","Site visit":"زيارة موقع","Client visit":"زيارة زبون","Get feedback":"أخذ رأي الزبون","Other…":"أخرى…","Write the task":"اكتب المهمة","My page":"صفحتي","By company":"حسب الشركة","Show open only":"المفتوحة فقط","Show done too":"إظهار المنجزة أيضًا","Nothing assigned right now.":"لا شيء مُسند الآن.","Weekly report":"التقرير الأسبوعي","This login has no name yet.":"هذا الحساب بلا اسم بعد.","Ask the admin to add your name in Team Access.":"اطلب من المدير إضافة اسمك في صلاحيات الفريق.","This login has no name — ask the admin to add it in Team Access.":"هذا الحساب بلا اسم — اطلب من المدير إضافته في صلاحيات الفريق.","Own page — own money & own tasks (e.g. Jean)":"صفحة خاصة — أمواله ومهامه فقط (مثل Jean)","Write the person's name (as in \"Assigned to\") for an own-page login.":"اكتب اسم الشخص (كما في «مُسند إلى») لحساب الصفحة الخاصة.","Assigned to you":"مُسند إليك","My tasks":"مهامي","My weekly report":"تقريري الأسبوعي","Hide":"إخفاء","Not assigned":"غير مُسند","Open tasks by person":"المهام المفتوحة حسب الشخص","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
+"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","Due Date":"تاريخ الاستحقاق","Choose who the task is assigned to.":"اختر لمن أُسندت المهمة.","Choose the status.":"اختر الحالة.","Filled in automatically":"يُملأ تلقائيًا","Follow up with a candidate":"متابعة مع مرشّح","Meeting with a store":"اجتماع مع متجر","Call a customer":"الاتصال بزبون","Install software":"تثبيت برنامج","Site visit":"زيارة موقع","Client visit":"زيارة زبون","Get feedback":"أخذ رأي الزبون","Other…":"أخرى…","Write the task":"اكتب المهمة","My page":"صفحتي","By company":"حسب الشركة","Show open only":"المفتوحة فقط","Show done too":"إظهار المنجزة أيضًا","Nothing assigned right now.":"لا شيء مُسند الآن.","Weekly report":"التقرير الأسبوعي","This login has no name yet.":"هذا الحساب بلا اسم بعد.","Ask the admin to add your name in Team Access.":"اطلب من المدير إضافة اسمك في صلاحيات الفريق.","This login has no name — ask the admin to add it in Team Access.":"هذا الحساب بلا اسم — اطلب من المدير إضافته في صلاحيات الفريق.","Own page — own money & own tasks (e.g. Jean)":"صفحة خاصة — أمواله ومهامه فقط (مثل Jean)","Write the person's name (as in \"Assigned to\") for an own-page login.":"اكتب اسم الشخص (كما في «مُسند إلى») لحساب الصفحة الخاصة.","Assigned to you":"مُسند إليك","My tasks":"مهامي","My weekly report":"تقريري الأسبوعي","Hide":"إخفاء","Not assigned":"غير مُسند","Open tasks by person":"المهام المفتوحة حسب الشخص","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
 "never":"أبدًا","today":"اليوم","Invoice":"فاتورة","Reseller":"موزّع",
 "My Account":"حسابي","Reseller portal — own account only":"بوابة الموزّع — حسابه فقط","Account not found":"الحساب غير موجود","Please contact us.":"يرجى التواصل معنا.","Download statement (PDF)":"تنزيل كشف الحساب (PDF)",
 "Amount due":"المبلغ المستحق","Credit balance":"رصيد دائن","My services":"خدماتي","Total per month":"المجموع الشهري","My statement":"كشف حسابي","Support":"الدعم","Report a problem":"الإبلاغ عن مشكلة","Send":"إرسال",
@@ -4853,7 +4854,7 @@ function buildScheduleForm(existing){
   panel.appendChild(el("h2",{},[isEdit ? "Edit Task" : "Add Task"]));
 
   var grid = el("div",{class:"form-grid"});
-  var dateField = el("div",{class:"field"},[el("label",{},["Date"]), el("input",{type:"date", id:"tf-date", value: isEdit ? (existing.date||todayISO()) : todayISO()})]);
+  var dateField = el("div",{class:"field"},[el("label",{},["Date"]), el("input",{type:"date", id:"tf-date", readonly:"readonly", title:"Filled in automatically", style:"background:var(--paper); color:var(--ink-soft);", value: isEdit ? (existing.date||todayISO()) : todayISO()})]);
 
   var typeField = el("div",{class:"field"},[el("label",{},["Task Type *"])]);
   var typeSelect = el("select",{id:"tf-type"});
@@ -4868,20 +4869,20 @@ function buildScheduleForm(existing){
   typeField.appendChild(typeOther);
 
   var siteField = el("div",{class:"field"},[el("label",{},["Site / Client"]), el("input",{type:"text", id:"tf-site", value:isEdit?(existing.siteClient||""):""})]);
-  var dueField = el("div",{class:"field"},[el("label",{},["Planned Due Date"]), el("input",{type:"date", id:"tf-due", value:isEdit?(existing.plannedDueDate||""):""})]);
+  var dueField = el("div",{class:"field"},[el("label",{},["Due Date"]), el("input",{type:"date", id:"tf-due", value:isEdit?(existing.plannedDueDate||""):""})]);
   // "Assigned to": the people of this company (same list as the Weekly Report → People); free text if no list is set
   watchWeekly();
   var curResp = isEdit ? (existing.responsible || "") : "";
   var respPeople = wrPeople().map(function(p){ return p.name; });
   if (curResp && respPeople.indexOf(curResp) === -1) respPeople.push(curResp);
-  var respField = el("div",{class:"field"},[el("label",{},["Assigned to"]), respPeople.length
+  var respField = el("div",{class:"field"},[el("label",{},["Assigned to *"]), respPeople.length
     ? el("select",{id:"tf-resp"},[el("option",{value:""},["Choose…"])].concat(respPeople.map(function(n){ return el("option",{value:n, selected:curResp === n ? "selected" : null},[n]); })))
     : el("input",{type:"text", id:"tf-resp", value:curResp})]);
 
-  var statusField = el("div",{class:"field"},[el("label",{},["Status"])]);
+  var statusField = el("div",{class:"field"},[el("label",{},["Status *"])]);
   var statusSelect = el("select",{id:"tf-status"});
   var curStatus = isEdit ? (existing.status||"Pending") : "Pending";
-  TASK_STATUSES.forEach(function(s){ statusSelect.appendChild(el("option",{value:s, selected:s===curStatus?"selected":null},[s])); });
+  TASK_STATUSES.forEach(function(s){ statusSelect.appendChild(el("option",{value:s, selected:s===curStatus?"selected":null},[taskStatusLabel(s)])); });
   statusField.appendChild(statusSelect);
 
   var companyField = el("div",{class:"field"},[el("label",{},["Company"])]);
@@ -4891,11 +4892,9 @@ function buildScheduleForm(existing){
   companyField.appendChild(companySelect);
 
   grid.appendChild(dateField); grid.appendChild(typeField);
-  grid.appendChild(siteField); grid.appendChild(dueField);
-  grid.appendChild(respField); grid.appendChild(statusField);
+  grid.appendChild(dueField); grid.appendChild(respField);
+  grid.appendChild(statusField); grid.appendChild(siteField);
   grid.appendChild(companyField);
-  var pjF = projectField("tf-project", isEdit ? (existing.projectId || "") : (STATE.prefillProjectId || ""), curCompany);
-  if (pjF) grid.appendChild(pjF);
   panel.appendChild(grid);
 
   var notesField = el("div",{class:"field wide"},[el("label",{},["Notes"]), el("input",{type:"text", id:"tf-notes", placeholder:"Optional", value:isEdit?(existing.notes||""):""})]);
@@ -4934,6 +4933,8 @@ function buildScheduleForm(existing){
       var taskType = document.getElementById("tf-type").value;
       if (taskType === "__other") taskType = (document.getElementById("tf-type-other").value || "").trim();
       if (!taskType){ toast("Task type is required."); return; }
+      if (!document.getElementById("tf-resp").value.trim()){ toast("Choose who the task is assigned to."); return; }
+      if (!document.getElementById("tf-status").value){ toast("Choose the status."); return; }
       var equipIds = Array.prototype.slice.call(document.querySelectorAll(".tf-equip-cb:checked")).map(function(cb){ return cb.value; });
       var data = {
         date: document.getElementById("tf-date").value || todayISO(),
@@ -4946,7 +4947,6 @@ function buildScheduleForm(existing){
         notes: document.getElementById("tf-notes").value.trim(),
         equipmentUsed: equipIds
       };
-      var tpj = readProject("tf-project"); if (tpj) Object.assign(data, tpj);
       STATE.prefillProjectId = "";
       if (!db){ toast("Live sync unavailable — can't save right now."); return; }
       if (data.responsible && (!isEdit || data.responsible !== (existing.responsible || ""))){
@@ -5023,7 +5023,7 @@ function buildSchedulesListView(){
     el("div",{class:"stat"},[ el("div",{class:"num"},[String(allForCompany.length)]), el("div",{class:"lbl"},["Tasks — " + STATE.company]) ]),
     el("div",{class:"stat"},[ el("div",{class:"num"},[String(openCount)]), el("div",{class:"lbl"},["Open"]) ]),
     el("div",{class:"stat owed"},[ el("div",{class:"num"},[String(overdueCount)]), el("div",{class:"lbl"},["Overdue"]) ]),
-    el("div",{class:"stat"},[ el("div",{class:"num"},[String(doneCount)]), el("div",{class:"lbl"},["Done"]) ])
+    el("div",{class:"stat"},[ el("div",{class:"num"},[String(doneCount)]), el("div",{class:"lbl"},["Closed"]) ])
   ]));
   if (whoNames.length){
     var chips = el("div",{style:"display:flex; flex-wrap:wrap; gap:8px; margin:-4px 0 14px;"});
@@ -5046,7 +5046,7 @@ function buildSchedulesListView(){
   var toolbar = el("div",{class:"toolbar"});
   toolbar.appendChild(el("input",{class:"search-input", type:"text", placeholder:"Search by site/client, assigned person, or task type…", value:STATE.scheduleSearch, oninput:function(e){ STATE.scheduleSearch = e.target.value; render(); }}));
   var statusFilterSelect = el("select",{onchange:function(e){ STATE.scheduleStatusFilter = e.target.value; render(); }});
-  [["all","All Statuses"]].concat(TASK_STATUSES.map(function(s){ return [s,s]; })).forEach(function(pair){
+  [["all","All Statuses"]].concat(TASK_STATUSES.map(function(s){ return [s, taskStatusLabel(s)]; })).forEach(function(pair){
     statusFilterSelect.appendChild(el("option",{value:pair[0], selected:STATE.scheduleStatusFilter===pair[0]?"selected":null},[pair[1]]));
   });
   toolbar.appendChild(statusFilterSelect);
@@ -5082,7 +5082,7 @@ function buildSchedulesListView(){
   var tableWrap = el("div",{class:"table-wrap"});
   var table = el("table");
   table.appendChild(el("thead",{},[el("tr",{},[
-    el("th",{},["Date"]), el("th",{},["Task Type"]), el("th",{},["Site / Client"]), el("th",{},["Planned Due"]),
+    el("th",{},["Date"]), el("th",{},["Task Type"]), el("th",{},["Site / Client"]), el("th",{},["Due Date"]),
     el("th",{},["Assigned to"]), el("th",{},["Status"]), el("th",{},["Notes"]), el("th",{class:"del-cell"},[""])
   ])]));
   var tbody = el("tbody");
@@ -5092,11 +5092,11 @@ function buildSchedulesListView(){
     var statusSelect = el("select",{class:"status-select", style:scheduleStatusStyle(status), onchange:function(e){
       if (!db) return;
       var newStatus = e.target.value;
-      db.doc("schedules/"+t.id).update({status:newStatus}).then(function(){
+      db.doc("schedules/"+t.id).update({status:newStatus, updatedAt:new Date().toISOString()}).then(function(){
         toast("Status updated.");
         syncInventoryForTask(t.id, t.equipmentUsed||[], t.equipmentUsed||[], newStatus, t.siteClient, t.responsible);
       }).catch(function(){});
-    }}, TASK_STATUSES.map(function(s){ return el("option",{value:s, selected:status===s?"selected":null},[s]); }));
+    }}, TASK_STATUSES.map(function(s){ return el("option",{value:s, selected:status===s?"selected":null},[taskStatusLabel(s)]); }));
 
     tbody.appendChild(el("tr",{},[
       el("td",{},[t.date||"—"]),
@@ -9694,7 +9694,7 @@ function buildJeanWork(who){
         el("td",{style:"font-size:12.5px; color:var(--ink-soft); white-space:pre-wrap;"},[el("bdi",{},[x.notes || ""])]),
         el("td",{},[el("select",{onchange:function(e){
           db.doc("schedules/" + x.id).update({status:e.target.value, updatedAt:new Date().toISOString()}).then(function(){ toast("Saved."); }).catch(function(){ toast("Couldn't save — try again."); });
-        }}, TASK_STATUSES.map(function(s){ return el("option",{value:s, selected:st === s ? "selected" : null},[s]); }))])
+        }}, TASK_STATUSES.map(function(s){ return el("option",{value:s, selected:st === s ? "selected" : null},[taskStatusLabel(s)]); }))])
       ]));
     });
     t.appendChild(b); p.appendChild(el("div",{class:"table-wrap"},[t]));
