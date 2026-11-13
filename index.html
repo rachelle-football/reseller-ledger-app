@@ -4891,10 +4891,11 @@ function buildScheduleForm(existing){
   COMPANIES.forEach(function(c){ companySelect.appendChild(el("option",{value:c, selected:c===curCompany?"selected":null},[c])); });
   companyField.appendChild(companySelect);
 
-  grid.appendChild(dateField); grid.appendChild(typeField);
-  grid.appendChild(dueField); grid.appendChild(respField);
-  grid.appendChild(statusField); grid.appendChild(siteField);
-  grid.appendChild(companyField);
+  // order: Date, Due date, Task type, Assigned to, Site / Client … Status last. The company is the one chosen at the top
+  // (each company keeps its own tasks), so it is not asked here.
+  grid.appendChild(dateField); grid.appendChild(dueField);
+  grid.appendChild(typeField); grid.appendChild(respField);
+  grid.appendChild(siteField);
   panel.appendChild(grid);
 
   var notesField = el("div",{class:"field wide"},[el("label",{},["Notes"]), el("input",{type:"text", id:"tf-notes", placeholder:"Optional", value:isEdit?(existing.notes||""):""})]);
@@ -4908,7 +4909,7 @@ function buildScheduleForm(existing){
     return (it.status||"In Stock") === "In Stock";
   }).sort(function(a,b){ return (a.equipmentType||"").localeCompare(b.equipmentType||""); });
 
-  var equipField = el("div",{class:"field wide"},[el("label",{},["Equipment Used (marks items Assigned when Status is Done)"])]);
+  var equipField = el("div",{class:"field wide"},[el("label",{},["Equipment Used (marks items Assigned when Status is Closed)"])]);
   var equipList = el("div",{class:"checklist", style:"max-height:160px; overflow:auto; border:1px solid var(--surface-2); border-radius:8px; padding:8px;"});
   if (!equipOptions.length){
     equipList.appendChild(el("div",{style:"color:var(--ink-faint); font-size:13px;"},["No available inventory items for " + equipCompany + "."]));
@@ -4922,7 +4923,8 @@ function buildScheduleForm(existing){
     equipList.appendChild(row);
   });
   equipField.appendChild(equipList);
-  panel.appendChild(equipField);
+  if (equipOptions.length || existingEquipIds.length) panel.appendChild(equipField);
+  panel.appendChild(el("div",{class:"form-grid", style:"margin-top:4px;"},[statusField]));
 
   var actions = el("div",{class:"form-actions"},[
     el("button",{class:"btn ghost", onclick:function(){
@@ -4943,7 +4945,7 @@ function buildScheduleForm(existing){
         plannedDueDate: document.getElementById("tf-due").value || "",
         responsible: document.getElementById("tf-resp").value.trim(),
         status: document.getElementById("tf-status").value,
-        company: document.getElementById("tf-company").value,
+        company: curCompany,
         notes: document.getElementById("tf-notes").value.trim(),
         equipmentUsed: equipIds
       };
