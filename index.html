@@ -504,9 +504,9 @@ var ROLES = ["admin","hr","accountant","sales","employee","person"];
 var ROLE_MODULES = {
   hr:["employees","schedules","tickets"],
   accountant:["dashboard","collections","reports","resellers","transactions","jean","invoices","quotations","weekly","expenses","purchases","projects","employees"],
-  sales:["invoices","quotations","schedules","weekly"],
+  sales:["invoices","quotations","schedules","weekly","my-spend"],
   employee:["schedules","tickets"],
-  person:["mypage"],
+  person:["mypage","my-spend"],
   reseller:["my-account"]
 };
 var ROLE_LABELS = {
@@ -1532,7 +1532,7 @@ var AR = {
 "Family allow. paid":"التعويضات المدفوعة","Net due NSSF":"الصافي المستحق للضمان","Contract":"العقد","Costs":"الكلفة","Balance today":"الرصيد اليوم","Still owed (all time)":"المتبقي (كل الفترات)",
 "Collections":"التحصيل","Not due yet":"غير مستحق بعد","0–30 days":"0–30 يومًا","31–60 days":"31–60 يومًا","61–90 days":"61–90 يومًا","90+ days":"أكثر من 90 يومًا","Total owed to you":"إجمالي المستحق لك",
 "Resellers & invoices":"الموزّعون والفواتير","Resellers only":"الموزّعون فقط","Invoices only":"الفواتير فقط","Oldest first":"الأقدم أولًا","Biggest first":"الأكبر أولًا","Search name or phone…":"ابحث بالاسم أو الهاتف…",
-"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","Due Date":"تاريخ الاستحقاق","Choose who the task is assigned to.":"اختر لمن أُسندت المهمة.","Choose the status.":"اختر الحالة.","Filled in automatically":"يُملأ تلقائيًا","Follow up with a candidate":"متابعة مع مرشّح","Meeting with a store":"اجتماع مع متجر","Call a customer":"الاتصال بزبون","Install software":"تثبيت برنامج","Site visit":"زيارة موقع","Client visit":"زيارة زبون","Get feedback":"أخذ رأي الزبون","Other…":"أخرى…","Write the task":"اكتب المهمة","My page":"صفحتي","By company":"حسب الشركة","Show open only":"المفتوحة فقط","Show done too":"إظهار المنجزة أيضًا","Nothing assigned right now.":"لا شيء مُسند الآن.","Weekly report":"التقرير الأسبوعي","This login has no name yet.":"هذا الحساب بلا اسم بعد.","Ask the admin to add your name in Team Access.":"اطلب من المدير إضافة اسمك في صلاحيات الفريق.","This login has no name — ask the admin to add it in Team Access.":"هذا الحساب بلا اسم — اطلب من المدير إضافته في صلاحيات الفريق.","Own page — own money & own tasks (e.g. Jean)":"صفحة خاصة — أمواله ومهامه فقط (مثل Jean)","Write the person's name (as in \"Assigned to\") for an own-page login.":"اكتب اسم الشخص (كما في «مُسند إلى») لحساب الصفحة الخاصة.","Assigned to you":"مُسند إليك","My tasks":"مهامي","My weekly report":"تقريري الأسبوعي","Hide":"إخفاء","Not assigned":"غير مُسند","Open tasks by person":"المهام المفتوحة حسب الشخص","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
+"Nothing in this selection.":"لا شيء في هذا الاختيار.","Nobody owes you money 🎉":"لا أحد مدين لك 🎉","Today's reminders":"تذكيرات اليوم","My expenses":"مصاريفي","Record a payment":"تسجيل دفعة","What for":"لماذا","e.g. fuel, cable, lunch with client":"مثلًا بنزين، كابل، غداء مع زبون","Attach invoice photo":"إرفاق صورة الفاتورة","Invoice photo ready ✓":"صورة الفاتورة جاهزة ✓","Optional — a photo or screenshot of the invoice.":"اختياري — صورة أو لقطة شاشة للفاتورة.","Write what it was for.":"اكتب لماذا دُفع.","Saved — sent for approval.":"تم الحفظ — أُرسل للموافقة.","Paid this month":"المدفوع هذا الشهر","Waiting for approval":"بانتظار الموافقة","+ I paid something":"+ دفعت شيئًا","Nothing recorded yet.":"لم يُسجَّل شيء بعد.","Paid for something for work? Click \"+ I paid something\".":"دفعت شيئًا للعمل؟ اضغط «+ دفعت شيئًا».","Approved":"تمت الموافقة","Invoice":"الفاتورة","This page can't load yet — the Firebase security rules need updating.":"لا يمكن تحميل هذه الصفحة بعد — يجب تحديث قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need updating.":"لا يسمح Firebase بحفظ هذا بعد — يجب تحديث قواعد الأمان.","Due Date":"تاريخ الاستحقاق","Choose who the task is assigned to.":"اختر لمن أُسندت المهمة.","Choose the status.":"اختر الحالة.","Filled in automatically":"يُملأ تلقائيًا","Follow up with a candidate":"متابعة مع مرشّح","Meeting with a store":"اجتماع مع متجر","Call a customer":"الاتصال بزبون","Install software":"تثبيت برنامج","Site visit":"زيارة موقع","Client visit":"زيارة زبون","Get feedback":"أخذ رأي الزبون","Other…":"أخرى…","Write the task":"اكتب المهمة","My page":"صفحتي","By company":"حسب الشركة","Show open only":"المفتوحة فقط","Show done too":"إظهار المنجزة أيضًا","Nothing assigned right now.":"لا شيء مُسند الآن.","Weekly report":"التقرير الأسبوعي","This login has no name yet.":"هذا الحساب بلا اسم بعد.","Ask the admin to add your name in Team Access.":"اطلب من المدير إضافة اسمك في صلاحيات الفريق.","This login has no name — ask the admin to add it in Team Access.":"هذا الحساب بلا اسم — اطلب من المدير إضافته في صلاحيات الفريق.","Own page — own money & own tasks (e.g. Jean)":"صفحة خاصة — أمواله ومهامه فقط (مثل Jean)","Write the person's name (as in \"Assigned to\") for an own-page login.":"اكتب اسم الشخص (كما في «مُسند إلى») لحساب الصفحة الخاصة.","Assigned to you":"مُسند إليك","My tasks":"مهامي","My weekly report":"تقريري الأسبوعي","Hide":"إخفاء","Not assigned":"غير مُسند","Open tasks by person":"المهام المفتوحة حسب الشخص","Weekly Report":"التقرير الأسبوعي","Ongoing":"جارٍ","New line":"سطر جديد","Edit line":"تعديل السطر","+ New line":"+ سطر جديد","Customer or task name":"اسم الزبون أو المهمة","e.g. Net Star, Tabarja link":"مثلًا Net Star، رابط طبرجا","Assigned to":"مُسند إلى","Planned date":"التاريخ المخطط","Action done":"الإجراء المنجز","Action to be done":"الإجراء المطلوب","What was done":"ما تم إنجازه","What is still to do":"ما بقي للقيام به","Write the customer or task name.":"اكتب اسم الزبون أو المهمة.","Choose who it is assigned to.":"اختر لمن أُسندت.","People you can assign to":"الأشخاص الذين يمكن الإسناد إليهم","+ Add person":"+ إضافة شخص","Login email (optional)":"بريد الدخول (اختياري)","Add at least one name.":"أضف اسمًا واحدًا على الأقل.","Couldn't save — only an admin can change this list.":"تعذّر الحفظ — المدير فقط يمكنه تغيير هذه القائمة.","Add each person's login email so \"Assigned to me\" shows them their own lines. Leave it empty for someone without a login.":"أضف بريد الدخول لكل شخص كي يُظهر له «المُسند إليّ» أسطره. اتركه فارغًا لمن ليس لديه حساب.","Assigned to me":"المُسند إليّ","All statuses":"كل الحالات","People":"الأشخاص","Customer / task":"الزبون / المهمة","No lines yet.":"لا توجد أسطر بعد.","Click \"+ New line\" to add a customer or task.":"اضغط «+ سطر جديد» لإضافة زبون أو مهمة.","Deleted.":"تم الحذف.","This page can't load yet — the Firebase security rules need \"weeklyReports\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"weeklyReports\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «weeklyReports» إلى قواعد الأمان.","Sales — invoices, quotations, tasks & weekly report":"مبيعات — الفواتير وعروض الأسعار والمهام والتقرير الأسبوعي","Jean":"Jean","Whish":"ويش","+ Received":"+ استلم","+ Paid / spent":"+ دفع / صرف","Paid / spent":"المدفوع / المصروف","From whom":"ممّن","To whom / for what":"لمن / لماذا","e.g. Office, a customer":"مثلًا المكتب، زبون","e.g. Energy, fuel, technician":"مثلًا Energy، بنزين، فني","Amount (USD)":"المبلغ (دولار)","Cash or Whish":"نقدًا أو ويش","Previous month":"الشهر السابق","Next month":"الشهر التالي","Nothing paid or spent this month.":"لم يُدفع أو يُصرف شيء هذا الشهر.","Nothing received this month.":"لم يُستلم شيء هذا الشهر.","To / for":"لمن / لماذا","Saved.":"تم الحفظ.","Write who gave him the money.":"اكتب من أعطاه المال.","Write who he paid or what it was for.":"اكتب لمن دفع أو لماذا.","This page can't load yet — the Firebase security rules need \"collectorMoves\" added.":"لا يمكن تحميل هذه الصفحة بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان في Firebase.","Firebase doesn't allow saving this yet — the security rules need \"collectorMoves\" added.":"لا يسمح Firebase بحفظ هذا بعد — يجب إضافة «collectorMoves» إلى قواعد الأمان.","Removed.":"تمت الإزالة.","Sign-in is only allowed from inside Lebanon. If you are in Lebanon, turn off any VPN and try again.":"تسجيل الدخول مسموح من داخل لبنان فقط. إذا كنت في لبنان، أوقف أي VPN وحاول مجددًا.","Send on WhatsApp":"إرسال عبر واتساب","Skip":"تخطٍّ","All done for today ✓":"انتهت تذكيرات اليوم ✓","Nobody needs a reminder right now.":"لا أحد يحتاج إلى تذكير الآن.","Remind the same person:":"تذكير الشخص نفسه:","Every day":"كل يوم","Every 3 days":"كل 3 أيام","Once a week":"مرة في الأسبوع","Who":"من","Owes":"المستحق","Oldest":"الأقدم","Age":"العمر","Last reminder":"آخر تذكير","Remind":"تذكير","No phone":"لا يوجد هاتف",
 "never":"أبدًا","today":"اليوم","Invoice":"فاتورة","Reseller":"موزّع",
 "My Account":"حسابي","Reseller portal — own account only":"بوابة الموزّع — حسابه فقط","Account not found":"الحساب غير موجود","Please contact us.":"يرجى التواصل معنا.","Download statement (PDF)":"تنزيل كشف الحساب (PDF)",
 "Amount due":"المبلغ المستحق","Credit balance":"رصيد دائن","My services":"خدماتي","Total per month":"المجموع الشهري","My statement":"كشف حسابي","Support":"الدعم","Report a problem":"الإبلاغ عن مشكلة","Send":"إرسال",
@@ -1869,6 +1869,7 @@ function renderTopBar(){
     {id:"resellers", label:"Resellers"},
     {id:"transactions", label:"Transactions"},
     {id:"mypage", label:"My page", personOnly:true},
+    {id:"my-spend", label:"My expenses", spendOnly:true},
     {id:"jean", label:"Jean"},
     {id:"invoices", label:"Invoices"},
     {id:"employees", label:"Employees"},
@@ -1889,7 +1890,7 @@ function renderTopBar(){
   ];
   if (STATE.gate){ modules = []; switchEl.innerHTML = ""; }
   if (!isOwnerUser()){ modules = modules.filter(function(m){ return !m.ownerOnly; }); }
-  modules = modules.filter(function(m){ return moduleAllowed(m.id) && (!m.selfService || STATE.myEmployeeId) && !(m.id === "business-settings" && isRestricted()) && (!m.personOnly || isPersonUser()); });
+  modules = modules.filter(function(m){ return moduleAllowed(m.id) && (!m.selfService || STATE.myEmployeeId) && !(m.id === "business-settings" && isRestricted()) && (!m.personOnly || isPersonUser()) && (!m.spendOnly || isPersonUser() || roleOf() === "sales"); });
   modules.forEach(function(m){
     var cls = "module-tab" + (m.id===STATE.module?" active":"") + (m.soon?" soon":"");
     var children = [m.label];
@@ -7697,7 +7698,7 @@ function buildExpensesView(){
     if (x.hasReceipt || x.fileCount) acts.push(el("button",{class:"btn ghost small", title:"Receipts & files", onclick:function(){ STATE.editingExpenseId = x.id; STATE.showExpenseForm = false; STATE.pendingReceipt = null; render(); window.scrollTo(0,0); }},["📎 Files"]));
     if (x.source !== "payroll") acts.push(el("button",{class:"icon-btn", title:"Edit", onclick:function(){ STATE.editingExpenseId = x.id; STATE.showExpenseForm = false; STATE.pendingReceipt = null; render(); }},["✎"]));
     acts.push(el("button",{class:"icon-btn", title:"Delete", onclick:function(){ confirmDanger("This expense will be deleted.", function(){ db.doc("expenses/" + x.id).delete().catch(function(){ toast("Couldn't delete — try again."); }); }); }},["✕"]));
-    var who = x.source === "claim" ? (x.employeeName || "Employee") + " (claim)" : (supplierName(x.supplierId) || (x.source === "payroll" ? "Payroll" : (x.source === "recurring" ? "Recurring" : "—")));
+    var who = x.source === "claim" ? (x.employeeName || "Employee") + " (claim)" : x.source === "spend" ? (x.employeeName || x.paidByEmail || "—") + " (paid)" : (supplierName(x.supplierId) || (x.source === "payroll" ? "Payroll" : (x.source === "recurring" ? "Recurring" : "—")));
     tb.appendChild(el("tr",{},[el("td",{class:"mono"},[x.date || "—"]), el("td",{},[x.description || "", x.reference ? el("div",{style:"font-size:11.5px; color:var(--ink-faint);"},[x.reference]) : null]),
       el("td",{},[x.category || ""]), el("td",{},[who]), el("td",{class:"num mono", style:"font-weight:700;"},[moneyC(x.amount, x.currency || "USD")]),
       el("td",{},[el("span",{class:"status-pill " + si.cls},[si.label])]), el("td",{},[el("div",{style:"display:flex; gap:6px; flex-wrap:wrap;"}, acts)])]));
@@ -9785,6 +9786,115 @@ function buildJeanView(){
   return wrap;
 }
 
+/* ============================== MY EXPENSES ==============================
+   Anyone with a login (Sales, Own page…) records what they paid: date, amount, what for, a photo of the invoice.
+   It lands in Expenses of that company as "Pending approval" (source "spend"); an admin approves or rejects it there. */
+var unsubMySpend = null;
+function watchMySpend(){
+  if (unsubMySpend || !ORG || !db || !STATE.currentUserEmail) return;
+  STATE.mySpendLoaded = false;
+  try{
+    unsubMySpend = db.collection("expenses").where("orgId","==",ORG).where("paidByEmail","==",(STATE.currentUserEmail || "").toLowerCase()).onSnapshot(function(qs){
+      STATE.mySpend = qs.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      STATE.mySpendLoaded = true; STATE.mySpendError = false; render();
+    }, function(){ STATE.mySpend = []; STATE.mySpendLoaded = true; STATE.mySpendError = true; render(); });
+  }catch(e){ STATE.mySpend = []; STATE.mySpendLoaded = true; STATE.mySpendError = true; }
+}
+function stopMySpend(){ if (unsubMySpend){ try{ unsubMySpend(); }catch(e){} unsubMySpend = null; } STATE.mySpend = []; STATE.mySpendLoaded = false; }
+function mySpendName(){ return isPersonUser() ? (STATE.myName || "") : (wrMe() || STATE.currentUserEmail || ""); }
+
+function buildMySpendForm(){
+  var F = STATE.mySpendForm;
+  if (!F.company) F.company = COMPANIES.indexOf(STATE.company) !== -1 ? STATE.company : COMPANIES[0];
+  var p = el("div",{class:"panel", style:"margin-bottom:16px;"});
+  p.appendChild(el("h2",{},["Record a payment"]));
+  var cats = expenseCategories();
+  p.appendChild(el("div",{class:"form-grid"},[
+    el("div",{class:"field"},[el("label",{},["Date"]), el("input",{type:"date", value:F.date || localToday(), max:localToday(), onchange:function(e){ F.date = e.target.value; }})]),
+    el("div",{class:"field"},[el("label",{},["Amount *"]), el("input",{type:"number", step:"0.01", min:"0", placeholder:"0.00", value:F.amount || "", oninput:function(e){ F.amount = e.target.value; }})]),
+    el("div",{class:"field"},[el("label",{},["Currency"]), el("select",{onchange:function(e){ F.currency = e.target.value; }}, CURRENCIES.map(function(c){
+      return el("option",{value:c, selected:(F.currency || "USD") === c ? "selected" : null},[c]); }))]),
+    el("div",{class:"field"},[el("label",{},["What for *"]), el("input",{type:"text", dir:"auto", placeholder:"e.g. fuel, cable, lunch with client", value:F.desc || "", oninput:function(e){ F.desc = e.target.value; }})]),
+    el("div",{class:"field"},[el("label",{},["Category"]), el("select",{onchange:function(e){ F.category = e.target.value; }}, cats.map(function(c){
+      return el("option",{value:c, selected:(F.category || (cats.filter(function(x){ return /other/i.test(x); })[0] || cats[0])) === c ? "selected" : null},[c]); }))]),
+    isPersonUser() && COMPANIES.length > 1 ? el("div",{class:"field"},[el("label",{},["Company"]), el("select",{onchange:function(e){ F.company = e.target.value; }}, COMPANIES.map(function(c){
+      return el("option",{value:c, selected:F.company === c ? "selected" : null},[c]); }))]) : null
+  ]));
+  p.appendChild(el("div",{class:"field", style:"margin:8px 0;"},[el("label",{},["Note"]), el("input",{type:"text", dir:"auto", placeholder:"Optional", value:F.note || "", oninput:function(e){ F.note = e.target.value; }})]));
+  p.appendChild(el("div",{style:"display:flex; align-items:center; gap:10px; margin:6px 0 10px; flex-wrap:wrap;"},[
+    el("label",{class:"btn secondary small", style:"cursor:pointer;"},[STATE.pendingReceipt ? "Invoice photo ready ✓" : "Attach invoice photo",
+      el("input",{type:"file", accept:"image/*", style:"display:none;", onchange:function(ev){
+        var f = ev.target.files && ev.target.files[0]; if (!f) return;
+        compressImageFile(f, function(url){ if (!url){ toast("Couldn't use that image — try a smaller photo."); return; } STATE.pendingReceipt = url; render(); });
+      }})]),
+    STATE.pendingReceipt ? el("img",{src:STATE.pendingReceipt, alt:"Invoice", style:"height:48px; border-radius:6px; border:1px solid var(--line);"}) : null,
+    el("span",{style:"font-size:12.5px; color:var(--ink-faint);"},["Optional — a photo or screenshot of the invoice."])
+  ]));
+  p.appendChild(el("div",{class:"form-actions"},[
+    el("button",{class:"btn ghost", onclick:function(){ STATE.mySpendForm = null; STATE.pendingReceipt = null; render(); }},["Cancel"]),
+    el("button",{class:"btn", onclick:function(){
+      var amt = Math.round((Number(F.amount) || 0) * 100) / 100, desc = (F.desc || "").trim();
+      if (!(amt > 0)){ toast("Enter an amount greater than 0."); return; }
+      if (!desc){ toast("Write what it was for."); return; }
+      if (!db){ toast("Live sync unavailable — can't save right now."); return; }
+      var now = new Date().toISOString(), receipt = STATE.pendingReceipt, d = F.date || localToday();
+      var data = {date:d, paidDate:d, amount:amt, currency:F.currency || "USD", description:desc,
+        category:F.category || (cats.filter(function(x){ return /other/i.test(x); })[0] || cats[0] || "Other"), note:(F.note || "").trim(),
+        company:isPersonUser() ? F.company : STATE.company, source:"spend", paidByEmail:(STATE.currentUserEmail || "").toLowerCase(), employeeName:mySpendName(),
+        approval:"pending", status:"paid", method:"cash", supplierId:"", reference:"", createdAt:now, updatedAt:now};
+      if (receipt) data.hasReceipt = true;
+      db.collection("expenses").add(withOrg(data)).then(function(ref){
+        return receipt ? db.doc("expenses/" + ref.id).collection("files").doc("receipt").set({dataUrl:receipt, uploadedAt:now}) : null;
+      }).then(function(){ toast("Saved — sent for approval."); STATE.mySpendForm = null; STATE.pendingReceipt = null; render(); })
+        .catch(function(err){ toast(/permission|insufficient/i.test(String(err && (err.code || err.message))) ? "Firebase doesn't allow saving this yet — the security rules need updating." : "Couldn't save — try again."); });
+    }},["Save"])
+  ]));
+  return p;
+}
+
+function buildMySpendView(){
+  var wrap = document.createElement("div");
+  watchMySpend();
+  if (STATE.receiptView) wrap.appendChild(buildReceiptOverlay());
+  if (!STATE.mySpendLoaded){ wrap.appendChild(el("div",{},["Loading…"])); return wrap; }
+  var list = (STATE.mySpend || []).filter(function(x){ return isPersonUser() || (x.company || "Libancom") === STATE.company; })
+    .sort(function(a,b){ return (b.date || "").localeCompare(a.date || "") || (b.createdAt || "").localeCompare(a.createdAt || ""); });
+  var month = localToday().slice(0,7);
+  var thisMonth = list.filter(function(x){ return (x.date || "").slice(0,7) === month && x.approval !== "rejected"; });
+  wrap.appendChild(el("div",{class:"summary-row"},[
+    el("div",{class:"stat"},[el("div",{class:"num"},[fmtCurTotals(sumByCur(thisMonth))]), el("div",{class:"lbl"},["Paid this month"])]),
+    el("div",{class:"stat"},[el("div",{class:"num"},[String(list.filter(function(x){ return x.approval === "pending"; }).length)]), el("div",{class:"lbl"},["Waiting for approval"])])
+  ]));
+  wrap.appendChild(el("div",{class:"toolbar"},[el("div",{style:"flex:1;"}),
+    el("button",{class:"btn", onclick:function(){ STATE.mySpendForm = {}; STATE.pendingReceipt = null; render(); }},["+ I paid something"])]));
+  if (STATE.mySpendError) wrap.appendChild(el("div",{class:"sync-banner"},["This page can't load yet — the Firebase security rules need updating."]));
+  if (STATE.mySpendForm) wrap.appendChild(buildMySpendForm());
+  if (!list.length){
+    wrap.appendChild(el("div",{class:"empty-state"},[el("h3",{},["Nothing recorded yet."]), el("div",{},["Paid for something for work? Click \"+ I paid something\"."])]));
+    return wrap;
+  }
+  var t = el("table"), tb = el("tbody");
+  t.appendChild(el("thead",{},[el("tr",{},[el("th",{},["Date"]), el("th",{},["What for"]), isPersonUser() ? el("th",{},["Company"]) : null, el("th",{class:"num"},["Amount"]), el("th",{},["Status"]), el("th",{},[""])])]));
+  list.forEach(function(x){
+    var si = expStatusInfo(x);
+    tb.appendChild(el("tr",{},[
+      el("td",{class:"mono"},[x.date || ""]),
+      el("td",{},[el("div",{style:"font-weight:700;"},[el("bdi",{},[x.description || ""])]), x.note ? el("div",{style:"font-size:12px; color:var(--ink-faint);"},[el("bdi",{},[x.note])]) : null]),
+      isPersonUser() ? el("td",{},[x.company || "Libancom"]) : null,
+      el("td",{class:"num mono"},[moneyC(x.amount, x.currency)]),
+      el("td",{},[el("span",{class:"status-pill " + si.cls},[si.key === "pending" ? "Waiting for approval" : (si.key === "rejected" ? "Rejected" : "Approved")])]),
+      el("td",{style:"white-space:nowrap;"},[
+        x.hasReceipt ? el("button",{class:"btn ghost small", onclick:function(){ showReceipt(x.id); }},["Invoice"]) : null,
+        si.key === "pending" ? el("button",{class:"icon-btn", title:"Delete", onclick:function(){
+          confirmDanger("This payment will be removed.", function(){ db.doc("expenses/" + x.id).delete().then(function(){ toast("Removed."); }).catch(function(){ toast("Couldn't remove — try again."); }); }, "Remove");
+        }},["✕"]) : null
+      ])
+    ]));
+  });
+  t.appendChild(tb); wrap.appendChild(el("div",{class:"table-wrap"},[t]));
+  return wrap;
+}
+
 /* ============================== WEEKLY REPORT ==============================
    One line per customer or task: what was done, what is still to do, when it is planned, who it is
    assigned to and its status (Ongoing / Closed / Cancelled). Everyone who can open this page sees the
@@ -10422,6 +10532,11 @@ function render(){
     return;
   }
 
+  if (STATE.module === "my-spend" && (isPersonUser() || roleOf() === "sales")){
+    main.appendChild(buildMySpendView());
+    return;
+  }
+
   if (STATE.module === "mypage" && isPersonUser()){
     main.appendChild(buildJeanView(STATE.myName));
     return;
@@ -10552,7 +10667,7 @@ function teardownSubscriptions(){
   unsubExpenses = unsubSuppliers = unsubRecurring = unsubExpSettings = unsubProjects = unsubBackupInfo = unsubPOs = unsubSecurity = null;
   stopActivitySub(); STATE.recurringRanFor = null; STATE.dashKey = null; STATE.repPayKey = null;
   if (unsubCollectors){ try{ unsubCollectors(); }catch(e){} unsubCollectors = null; }
-  stopAttSubs(); stopTxListeners(); stopJean(); stopWeekly();
+  stopAttSubs(); stopTxListeners(); stopJean(); stopWeekly(); stopMySpend();
   STATE.payRunKey = null;
 }
 
