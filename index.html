@@ -1911,6 +1911,8 @@ function renderTopBar(){
     if (m.soon) children.push(el("span",{class:"tag"},["Soon"]));
     tabsEl.appendChild(el("div",{class:cls, onclick: m.soon ? null : function(){ STATE.module = m.id; render(); }},children));
   });
+  // Jean's page belongs to no company, so the company tabs are hidden there
+  tabsEl.style.display = STATE.module === "jean" ? "none" : "";
 }
 
 /* ============================== LIST VIEW ============================== */
