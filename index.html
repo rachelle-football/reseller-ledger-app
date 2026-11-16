@@ -1869,7 +1869,9 @@ function renderTopBar(){
   var jeanEl = document.getElementById("jean-switch");
   if (!jeanEl){ jeanEl = el("div",{class:"company-switch", id:"jean-switch"}); switchEl.parentNode.insertBefore(jeanEl, switchEl.nextSibling); }
   jeanEl.innerHTML = "";
-  jeanEl.style.display = (!STATE.gate && hasFinance() && moduleAllowed("jean")) ? "" : "none";
+  // only for an admin / accountant who sees every company (Jean is not under any company)
+  var jeanOk = !STATE.gate && hasFinance() && !isRestricted() && moduleAllowed("jean");
+  jeanEl.style.display = jeanOk ? "" : "none";
   jeanEl.appendChild(el("button",{class:inJean ? "active" : "", onclick:function(){
     if (STATE.module !== "jean"){ STATE.moduleBeforeJean = STATE.module; STATE.module = "jean"; } render();
   }},["Jean"]));
@@ -1904,7 +1906,7 @@ function renderTopBar(){
   if (STATE.gate){ modules = []; switchEl.innerHTML = ""; }
   if (!isOwnerUser()){ modules = modules.filter(function(m){ return !m.ownerOnly; }); }
   modules = modules.filter(function(m){ return !moduleHiddenHere(m.id) && moduleAllowed(m.id) && (!m.selfService || STATE.myEmployeeId) && !(m.id === "business-settings" && isRestricted()) && (!m.personOnly || isPersonUser()) && (!m.spendOnly || isPersonUser() || roleOf() === "sales"); });
-  if (moduleHiddenHere(STATE.module) && modules.length){ STATE.module = modules[0].id; STATE.view = "list"; STATE.selectedId = null; }
+  if ((moduleHiddenHere(STATE.module) || (STATE.module === "jean" && !jeanOk)) && modules.length){ STATE.module = modules[0].id; STATE.view = "list"; STATE.selectedId = null; }
   modules.forEach(function(m){
     var cls = "module-tab" + (m.id===STATE.module?" active":"") + (m.soon?" soon":"");
     var children = [m.label];
