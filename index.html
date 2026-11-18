@@ -10349,9 +10349,13 @@ function wrPeople(){
 }
 function wrMe(){
   var me = (STATE.currentUserEmail || "").toLowerCase();
-  var p = wrPeople().filter(function(x){ return (x.email || "").toLowerCase() === me && me; })[0];
-  // not in the Weekly Report people list: use the name from Team Access
-  return p ? p.name : (STATE.myName || "");
+  var people = wrPeople(), p = people.filter(function(x){ return (x.email || "").toLowerCase() === me && me; })[0];
+  if (p) return p.name;
+  // not in the Weekly Report people list: the name from Team Access, else a person whose name starts the login email
+  if (STATE.myName) return STATE.myName;
+  var local = me.split("@")[0].replace(/[^a-z]/g, "");
+  var q = people.filter(function(x){ var n = String(x.name || "").toLowerCase().replace(/[^a-z]/g, ""); return n.length >= 3 && local.indexOf(n) === 0; });
+  return q.length === 1 ? q[0].name : "";
 }
 function wrStatusLabel(s){ return (WR_STATUSES.filter(function(x){ return x[0] === s; })[0] || ["", "Ongoing"])[1]; }
 function wrStatusCls(s){ return s === "closed" ? "paid" : (s === "cancelled" ? "draft" : "sent"); }
@@ -10534,13 +10538,14 @@ function buildWeeklyView(){
 function myWorkSeenKey(){ return "rl-work-seen-" + (STATE.currentUserEmail || "").toLowerCase(); }
 function myWorkSeen(){ try{ return localStorage.getItem(myWorkSeenKey()) || ""; }catch(e){ return ""; } }
 function markMyWorkSeen(){ try{ localStorage.setItem(myWorkSeenKey(), new Date().toISOString()); }catch(e){} }
+// the first time on a device, anything assigned in the last 3 days counts as new
+function myWorkSince(){ var s = myWorkSeen(); if (s) return s; s = new Date(Date.now() - 3 * 86400000).toISOString(); try{ localStorage.setItem(myWorkSeenKey(), s); }catch(e){} return s; }
 function buildMyWorkBanner(){
   if (!ORG || !STATE.currentUserEmail) return null;
   watchWeekly();
   var me = wrMe();
   if (!me) return null;
-  var meEmail = (STATE.currentUserEmail || "").toLowerCase(), seen = myWorkSeen(), today = todayISO();
-  if (!seen){ markMyWorkSeen(); seen = new Date().toISOString(); }
+  var meEmail = (STATE.currentUserEmail || "").toLowerCase(), seen = myWorkSince(), today = todayISO();
   var isNew = function(x){ var t = x.assignedAt || x.createdAt || ""; return t > seen && (x.assignedBy || x.createdBy || "").toLowerCase() !== meEmail; };
   var tasks = (STATE.schedules || []).filter(function(t){ var st = t.status || "Pending";
     return (t.company || "Libancom") === STATE.company && t.responsible === me && (st === "Pending" || st === "In Progress"); });
@@ -10570,8 +10575,7 @@ function buildMyWorkBanner(){
 /* ---- pop-up when the app opens (and an alert while it is open) for tasks newly assigned to the person signed in ---- */
 function myWorkFresh(){
   var me = wrMe(); if (!me || !ORG) return [];
-  var meEmail = (STATE.currentUserEmail || "").toLowerCase(), seen = myWorkSeen();
-  if (!seen){ markMyWorkSeen(); return []; }
+  var meEmail = (STATE.currentUserEmail || "").toLowerCase(), seen = myWorkSince();
   var isNew = function(x){ var t = x.assignedAt || x.createdAt || ""; return t > seen && (x.assignedBy || x.createdBy || "").toLowerCase() !== meEmail; };
   var out = [];
   (STATE.schedules || []).forEach(function(t){ var st = t.status || "Pending";
