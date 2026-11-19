@@ -7665,7 +7665,7 @@ function buildSheetRestorePanel(){
     el("button",{class:"btn", disabled:STATE.sheetRestoring ? "disabled" : null, onclick:function(){
       confirmDanger(n + " line(s) will be added back (" + parts.join(" · ") + ").", function(){
         STATE.sheetRestoring = true; render();
-        var cats = expenseCategories(), cat = cats.filter(function(c){ return /other/i.test(c); })[0] || cats[0] || "Other", now = new Date().toISOString(), batch = db.batch();
+        var cats = expenseCategories(), cat = cats.filter(function(c){ return /other/i.test(c); })[0] || cats[0] || "Other", now = new Date().toISOString(), jobs = [];
         miss.forEach(function(b){
           var day = sheetLastDay(b.month);
           SHEET_RESTORE.filter(function(x){ return x.month === b.month; })[0].rows.forEach(function(r, i){
@@ -7673,11 +7673,16 @@ function buildSheetRestorePanel(){
             var d = {date:day, month:b.month, category:cat, description:r[2], amount:r[3], currency:"USD", note:"", supplierId:"", status:"paid", method:"", reference:"",
               paidDate:day, company:"Libancom", source:"sheet", sheet:SHEET_NAME, sheetBatch:b.batch, order:i + 1, approval:"approved", createdAt:r[1], updatedAt:now, restoredAt:now};
             if (i === 0){ d.sheetPhoto = true; d.hasReceipt = true; d.fileCount = 1; }
-            batch.set(db.doc("expenses/" + r[0]), withOrg(d));
+            jobs.push(db.doc("expenses/" + r[0]).set(withOrg(d)).then(function(){ return 1; }, function(){ return 0; }));
           });
         });
-        batch.commit().then(function(){ STATE.sheetRestoring = false; toast(n + " line(s) restored."); STATE.sheetMonth = miss[0].month; render(); })
-          .catch(function(){ STATE.sheetRestoring = false; toast("Couldn't restore — try again."); render(); });
+        // one by one (each is written to the activity log); a line that fails can be restored with a second click
+        Promise.all(jobs).then(function(res){
+          var ok = res.reduce(function(a,b){ return a + b; }, 0);
+          STATE.sheetRestoring = false; STATE.sheetMonth = miss[0].month;
+          toast(ok === n ? n + " line(s) restored." : ok + " of " + n + " restored — click Restore again for the rest.");
+          render();
+        });
       }, "Restore");
     }},[STATE.sheetRestoring ? "Restoring…" : "Restore " + n + " line(s)"])
   ]);
